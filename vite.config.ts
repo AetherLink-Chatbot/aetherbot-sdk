@@ -7,6 +7,12 @@ const entry = resolve(__dirname, 'src/index.ts');
 export default defineConfig({
   plugins: [react()],
   publicDir: false,
+  // Ensure UMD build replaces Node envs with browser-safe values
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+    'process.env': {},
+    global: 'window',
+  },
   build: {
     emptyOutDir: true,
     outDir: 'dist',
