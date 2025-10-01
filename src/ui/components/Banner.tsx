@@ -1,6 +1,6 @@
 import React from "react";
 
-export function Banner({ bannerImageUrl, companyName }: { bannerImageUrl: string; companyName: string }) {
+export function Banner({ bannerImageUrl, companyName, taglineText }: { bannerImageUrl: string; companyName: string; taglineText?: string }) {
   const onErr = (e: React.SyntheticEvent<HTMLImageElement>) => {
     (e.target as HTMLImageElement).src = "https://picsum.photos/seed/aetherbanner-fallback/800/200";
   };
@@ -13,7 +13,7 @@ export function Banner({ bannerImageUrl, companyName }: { bannerImageUrl: string
         <div className="absolute left-4 top-4 text-white">
           <p className="font-semibold">{companyName}</p>
           <p className="text-xs opacity-90 max-w-[240px]">
-            Every conversation matters, and this chatbot makes it worthwhile.
+            {taglineText || "Every conversation matters, and this chatbot makes it worthwhile."}
           </p>
         </div>
       </div>

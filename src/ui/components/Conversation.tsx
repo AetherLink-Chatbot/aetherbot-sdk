@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
 import { Send } from "lucide-react";
 import { Chat, Message } from "../types";
@@ -9,11 +11,22 @@ export function ConversationArea({
   onUpdateChat,
   onRetitle,
   onPlay,
+  onSendMessage,
+  inputPlaceholder = "Type message...",
+  thinkingText = "Thinking…",
 }: {
   chat: Chat;
   onUpdateChat: (chat: Chat) => void;
   onRetitle: (title: string) => void;
   onPlay: (freq?: number) => void;
+  onSendMessage?: (args: {
+    text: string;
+    chat: Chat;
+    thinkingId: string;
+    updateThinking: (content: string, done?: boolean) => void;
+  }) => Promise<void> | void;
+  inputPlaceholder?: string;
+  thinkingText?: string;
 }) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -35,7 +48,7 @@ export function ConversationArea({
     const thinking: Message = {
       id: crypto.randomUUID(),
       role: "assistant",
-      content: "Thinking…",
+      content: thinkingText,
       createdAt: Date.now(),
       thinking: true,
     };
@@ -50,24 +63,41 @@ export function ConversationArea({
       onRetitle(userMsg.content.slice(0, 36));
     }
 
-    const replyIn = 1200 + Math.random() * 1000;
-    setTimeout(() => {
-      const assistantMsg: Message = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content:
-          generateMockAnswer(userMsg.content) ||
-          "Thanks! I’m checking that and will get back to you.",
-        createdAt: Date.now(),
-      };
+    // If an external sender is provided, stream through it; otherwise mock
+    const updateThinking = (content: string, done = false) => {
       const next: Chat = {
         ...updated,
-        messages: updated.messages.map((m) => (m.thinking ? assistantMsg : m)),
+        messages: updated.messages.map((m) =>
+          m.id === thinking.id ? { ...m, content, thinking: !done } : m
+        ),
       };
       onUpdateChat(next);
-      onPlay?.(760);
-      setBusy(false);
-    }, replyIn);
+      if (done) onPlay?.(760);
+    };
+
+    const run = async () => {
+      if (onSendMessage) {
+        try {
+          await onSendMessage({ text: userMsg.content, chat: updated, thinkingId: thinking.id, updateThinking });
+        } catch (e) {
+          updateThinking("Sorry, something went wrong.", true);
+        } finally {
+          setBusy(false);
+        }
+        return;
+      }
+
+      const replyIn = 1200 + Math.random() * 1000;
+      setTimeout(() => {
+        const ans =
+          generateMockAnswer(userMsg.content) ||
+          "Thanks! I’m checking that and will get back to you.";
+        updateThinking(ans, true);
+        setBusy(false);
+      }, replyIn);
+    };
+
+    run();
   };
 
   return (
@@ -86,7 +116,7 @@ export function ConversationArea({
             onKeyDown={(e) => {
               if (e.key === "Enter") send();
             }}
-            placeholder="Type message..."
+            placeholder={inputPlaceholder}
             className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 pr-12 outline-none focus:ring-2 focus:ring-[var(--aether-primary)]/30 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500"
           />
           <button
@@ -117,7 +147,13 @@ function MessageBubble({ msg }: { msg: any }) {
             : "bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100"
         )}
       >
-        {msg.thinking ? <ThinkingRow /> : <span>{msg.content}</span>}
+        {msg.thinking ? (
+          <ThinkingRow label={msg.content} />
+        ) : (
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+          </div>
+        )}
         <div className={classNames("mt-1 text-[10px] opacity-70", isUser ? "text-white" : "text-zinc-500 dark:text-zinc-400")}> 
           {timeAgo(msg.createdAt)}
         </div>
@@ -126,11 +162,11 @@ function MessageBubble({ msg }: { msg: any }) {
   );
 }
 
-function ThinkingRow() {
+function ThinkingRow({ label = "Thinking…" }: { label?: string }) {
   return (
     <div className="flex items-center gap-2">
       <DotsLoader />
-      <span className="text-zinc-500 dark:text-zinc-400">Thinking…</span>
+      <span className="text-zinc-500 dark:text-zinc-400">{label}</span>
     </div>
   );
 }

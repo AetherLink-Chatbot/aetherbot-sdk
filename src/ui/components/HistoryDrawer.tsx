@@ -11,6 +11,9 @@ export function HistoryDrawer({
   setActiveId,
   onClose,
   onStartNew,
+  titleText,
+  newChatText,
+  onSelectChat,
 }: {
   show: boolean;
   chats: Chat[];
@@ -18,6 +21,9 @@ export function HistoryDrawer({
   setActiveId: (id: string) => void;
   onClose: () => void;
   onStartNew: () => void;
+  titleText?: string;
+  newChatText?: string;
+  onSelectChat?: (chat: Chat) => void;
 }) {
   return (
     <AnimatePresence>
@@ -32,10 +38,10 @@ export function HistoryDrawer({
             transition={{ type: "spring", stiffness: 200, damping: 18 }}
           >
             <div className="p-4 flex items-center justify-between border-b border-zinc-200/60 dark:border-white/10">
-              <p className="font-semibold">Past chats</p>
+              <p className="font-semibold">{titleText || "Past chats"}</p>
               <div className="flex items-center gap-2">
                 <button onClick={onStartNew} className="px-3 py-1.5 text-sm rounded-full bg-[var(--aether-primary)] text-white hover:opacity-90">
-                  New chat
+                  {newChatText || "New chat"}
                 </button>
                 <button onClick={onClose} className="h-8 w-8 grid place-items-center rounded-full hover:bg-zinc-100 dark:hover:bg-white/10" aria-label="Close history">
                   <X className="h-4 w-4" />
@@ -48,6 +54,7 @@ export function HistoryDrawer({
                 <button
                   key={c.id}
                   onClick={() => {
+                    onSelectChat?.(c);
                     setActiveId(c.id);
                     onClose();
                   }}
@@ -67,4 +74,3 @@ export function HistoryDrawer({
     </AnimatePresence>
   );
 }
-

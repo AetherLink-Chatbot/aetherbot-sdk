@@ -13,6 +13,7 @@ export function Header({
   setMuted,
   onHistory,
   onClose,
+  subtitleText,
 }: {
   avatarImageUrl: string;
   avatarName: string;
@@ -22,6 +23,7 @@ export function Header({
   setMuted: (v: boolean) => void;
   onHistory: () => void;
   onClose: () => void;
+  subtitleText?: string;
 }) {
   return (
     <div className="flex items-center justify-between px-4 py-3">
@@ -32,7 +34,7 @@ export function Header({
             <p className="font-semibold leading-none">{avatarName}</p>
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">Adaptable chatbot service</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">{subtitleText || "Adaptable chatbot service"}</p>
         </div>
       </div>
       <div className="flex items-center gap-1.5 text-zinc-500">

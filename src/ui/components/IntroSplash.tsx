@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import logoUrl from "../../assets/aetherbot-logo.png";
 
-export function IntroSplash() {
+export function IntroSplash({ poweredByBrand = "AetherBot" }: { poweredByBrand?: string }) {
   return (
     <motion.div
       key="splash"
@@ -69,7 +69,7 @@ export function IntroSplash() {
           delay: 0.6
         }}
       >
-        Powered by <span className="font-semibold bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent">AetherBot</span>
+        Powered by <span className="font-semibold bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent">{poweredByBrand}</span>
       </motion.p>
     </motion.div>
   );

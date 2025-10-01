@@ -24,7 +24,14 @@ export function ChatWindow({
   setMuted,
   onClose,
   play,
-}: Omit<Required<AetherChatWidgetProps>, "theme"> & {
+  onSendMessage,
+  strings,
+  initialShowHistory,
+  widthPercent,
+  heightPercent,
+  historyTitle,
+  onSelectHistoryChat,
+}: Pick<AetherChatWidgetProps, "avatarName" | "avatarImageUrl" | "bannerImageUrl" | "companyName" | "versionTag"> & {
   theme: ThemeConfig;
   setTheme: (t: ThemeConfig | ((t: ThemeConfig) => ThemeConfig)) => void;
   chats: Chat[];
@@ -35,8 +42,20 @@ export function ChatWindow({
   setMuted: (v: boolean) => void;
   onClose: () => void;
   play: (freq?: number, durationMs?: number) => void;
+  onSendMessage?: (args: {
+    text: string;
+    chat: Chat;
+    thinkingId: string;
+    updateThinking: (content: string, done?: boolean) => void;
+  }) => Promise<void> | void;
+  strings?: any;
+  initialShowHistory?: boolean;
+  widthPercent?: number;
+  heightPercent?: number;
+  historyTitle?: string;
+  onSelectHistoryChat?: (chat: Chat) => void;
 }) {
-  const [showHistory, setShowHistory] = useState(false);
+  const [showHistory, setShowHistory] = useState(!!initialShowHistory);
   const [phase, setPhase] = useState<"splash" | "chat">("splash");
 
   // Intro splash then transition to chat with a chime
@@ -49,9 +68,17 @@ export function ChatWindow({
     return () => clearTimeout(t);
   }, []);
 
+  const wClamp = typeof widthPercent === 'number' && !Number.isNaN(widthPercent)
+    ? `min(420px, max(380px, ${Math.max(0, Math.min(100, widthPercent))}vw))`
+    : undefined;
+  const hClamp = typeof heightPercent === 'number' && !Number.isNaN(heightPercent)
+    ? `${Math.min(78, Math.max(20, heightPercent))}vh`
+    : undefined;
+
   return (
     <motion.div
       className="pointer-events-auto fixed bottom-24 right-6 w-[380px] max-h-[78vh] sm:w-[420px]"
+      style={{ width: wClamp, maxHeight: hClamp } as React.CSSProperties}
       initial={{ opacity: 0, y: 16, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 16, scale: 0.98 }}
@@ -67,10 +94,11 @@ export function ChatWindow({
           setMuted={setMuted}
           onHistory={() => setShowHistory(true)}
           onClose={onClose}
+          subtitleText={strings?.headerSubtitle}
         />
 
         {/* Splash → Chat animated transition */}
-        <AnimateContent phase={phase} companyName={companyName} bannerImageUrl={bannerImageUrl} activeChat={activeChat} setChats={setChats} onRetitle={(title)=>setChats((xs)=>xs.map((c)=>c.id===activeChat.id?{...c,title}:c))} play={play} versionTag={versionTag} />
+        <AnimateContent phase={phase} companyName={companyName} bannerImageUrl={bannerImageUrl} activeChat={activeChat} setChats={setChats} onRetitle={(title)=>setChats((xs)=>xs.map((c)=>c.id===activeChat.id?{...c,title}:c))} play={play} versionTag={'v1.0  .'} onSendMessage={onSendMessage} strings={strings} />
 
         {/* Decorative bottom-right droplet */}
         <div className="absolute -bottom-3 -right-2 h-8 w-8 rounded-full bg-white dark:bg-black shadow-md" />
@@ -88,12 +116,12 @@ export function ChatWindow({
           const chat: Chat = {
             id,
             createdAt: now,
-            title: "New chat",
+            title: "Untitled chat",
             messages: [
               {
                 id: crypto.randomUUID(),
                 role: "assistant",
-                content: "Welcome! How can I help today?",
+                content: strings?.initialAssistantMessage || "Welcome! How can I help today?",
                 createdAt: now,
               },
             ],
@@ -101,6 +129,8 @@ export function ChatWindow({
           setChats((xs) => [chat, ...xs]);
           setActiveId(id);
         }}
+        titleText={historyTitle}
+        onSelectChat={onSelectHistoryChat}
       />
     </motion.div>
   );
@@ -115,28 +145,33 @@ function AnimateContent({
   onRetitle,
   play,
   versionTag,
+  onSendMessage,
+  strings,
 }: any) {
   return (
     <>
       {phase === "splash" ? (
-        <IntroSplash />
+        <IntroSplash poweredByBrand={"AetherLink"} />
       ) : (
         <motion.div key="chat" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          <Banner bannerImageUrl={bannerImageUrl} companyName={companyName} />
+          <Banner bannerImageUrl={bannerImageUrl} companyName={companyName} taglineText={strings?.bannerTagline} />
           <ConversationArea
             chat={activeChat}
             onUpdateChat={(chat: any) => setChats((xs: any) => xs.map((c: any) => (c.id === chat.id ? chat : c)))}
             onRetitle={onRetitle}
             onPlay={play}
+            onSendMessage={onSendMessage}
+            inputPlaceholder={strings?.inputPlaceholder}
+            thinkingText={strings?.thinkingLabel}
           />
           <div className="px-4 pb-2">
             <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
-              <div className="flex items-center gap-1">
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>
-                  Powered by <span className="font-medium">aetherlink</span>
-                </span>
-              </div>
+               <div className="flex items-center gap-1">
+                 <Sparkles className="h-3.5 w-3.5" />
+                 <span>
+                  {"Powered by"} <span className="font-medium">{"AetherLink"}</span>
+                 </span>
+               </div>
               <span className="opacity-70">{versionTag}</span>
             </div>
           </div>

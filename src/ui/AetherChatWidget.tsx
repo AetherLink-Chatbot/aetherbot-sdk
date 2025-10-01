@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { AetherChatWidgetProps, Chat, ThemeConfig } from "./types";
+import { AetherChatWidgetProps, Chat, ThemeConfig, TextOverrides } from "./types";
 import { useChime, useLocalStorage } from "./hooks";
 import { defaultAvatar, defaultBanner } from "./utils";
-import { Launcher } from "./components/Launcher";
+import Launcher from "./components/Launcher";
 import { ChatWindow } from "./components/ChatWindow";
+import { createPublicApiClient } from "../api/public";
 
 const initialTheme: ThemeConfig = {
   primary: "#7c3aed", // violet-600
@@ -12,13 +13,34 @@ const initialTheme: ThemeConfig = {
 };
 
 export default function AetherChatWidget({
-  avatarName = "Aetherbot",
-  avatarImageUrl = defaultAvatar,
+  avatarName,
+  displayName,
+  avatarImageUrl,
+  avatarImage,
   bannerImageUrl = defaultBanner,
-  companyName = "Aetherlink",
+  companyName,
+  organizationName,
   theme: themeProp,
   versionTag = "v1.01",
+  firstMessage = "Hey! I’m here to help. Ask me anything — product info, policies, or troubleshooting.",
+  welcomeMessage,
+  apiKey,
+  avatarId,
+  externalUserId,
+  externalUserName,
+  onReady,
+  autoOpenMode = "manual",
+  autoOpenDelaySeconds = 0,
+  autoOpenScrollPercentage = 0,
+  chatHistoryMode = "history",
+  widthPercent,
+  heightPercent,
+  strings,
 }: AetherChatWidgetProps) {
+  const resolvedName = avatarName || displayName || "Aetherbot";
+  const resolvedCompany = companyName || organizationName || "Aetherlink";
+  const resolvedAvatar = avatarImageUrl || avatarImage || defaultAvatar;
+
   const [theme, setTheme] = useLocalStorage<ThemeConfig>(
     "aether.widget.theme",
     { ...initialTheme, ...(themeProp || {}) }
@@ -32,13 +54,12 @@ export default function AetherChatWidget({
     {
       id: crypto.randomUUID(),
       createdAt: Date.now(),
-      title: "New chat",
+      title: "Untitled chat",
       messages: [
         {
           id: crypto.randomUUID(),
           role: "assistant",
-          content:
-            "Hey! I’m here to help. Ask me anything — product info, policies, or troubleshooting.",
+          content: firstMessage,
           createdAt: Date.now(),
         },
       ],
@@ -51,6 +72,9 @@ export default function AetherChatWidget({
   );
 
   const activeChat = chats.find((c) => c.id === activeId) || chats[0];
+
+  // History drawer title comes from API (project_name) when available
+  const [historyTitle, setHistoryTitle] = useState<string>("Past chats");
 
   useEffect(() => {
     if (!activeChat && chats.length) setActiveId(chats[0].id);
@@ -67,8 +91,10 @@ export default function AetherChatWidget({
     () => ({
       // @ts-ignore
       "--aether-primary": theme.primary,
+      "--aether-secondary": theme.secondary || theme.primary,
+      "--aether-text": theme.text || (theme.mode === "dark" ? "#fff" : "#000"),
     }),
-    [theme.primary]
+    [theme.primary, theme.secondary, theme.text, theme.mode]
   );
 
   const toggleOpen = () => {
@@ -78,30 +104,213 @@ export default function AetherChatWidget({
     });
   };
 
+  // Auto open behaviors
+  useEffect(() => {
+    if (autoOpenMode === "manual") return;
+    let opened = false;
+    const maybeOpen = () => {
+      if (opened) return;
+      opened = true;
+      setOpen(true);
+    };
+    const tasks: Array<() => void> = [];
+    if (autoOpenMode === "delay" || autoOpenMode === "hybrid") {
+      const t = window.setTimeout(maybeOpen, Math.max(0, autoOpenDelaySeconds) * 1000);
+      tasks.push(() => clearTimeout(t));
+    }
+    if (autoOpenMode === "scroll" || autoOpenMode === "hybrid") {
+      const onScroll = () => {
+        const total = document.documentElement.scrollHeight - window.innerHeight;
+        const scrolled = window.scrollY;
+        const pct = total > 0 ? (scrolled / total) * 100 : 0;
+        if (pct >= Math.max(0, Math.min(100, autoOpenScrollPercentage))) {
+          maybeOpen();
+          window.removeEventListener("scroll", onScroll);
+        }
+      };
+      window.addEventListener("scroll", onScroll);
+      tasks.push(() => window.removeEventListener("scroll", onScroll));
+    }
+    return () => tasks.forEach((fn) => fn());
+  }, [autoOpenMode, autoOpenDelaySeconds, autoOpenScrollPercentage]);
+
+  // Prepare API client if config provided
+  const API_BASE = "https://aetherbot.dev";
+  const canLive = apiKey && avatarId && externalUserId;
+  const client = useMemo(() => {
+    if (!canLive) return null;
+    return createPublicApiClient({
+      apiKey: apiKey!,
+      apiBaseUrl: API_BASE,
+      avatarId: avatarId!,
+      externalUserId: externalUserId!,
+      externalUserName,
+    });
+  }, [apiKey, avatarId, externalUserId, externalUserName, canLive]);
+
+  // Expose controls to outer controller
+  useEffect(() => {
+    if (!onReady) return;
+    const controls = {
+      open: () => setOpen(true),
+      close: () => setOpen(false),
+      toggle: () => setOpen((v) => !v),
+      resetConversation: () => {
+        const id = crypto.randomUUID();
+        const now = Date.now();
+        const chat: Chat = {
+          id,
+          createdAt: now,
+          title: "New chat",
+          messages: [
+            {
+              id: crypto.randomUUID(),
+              role: "assistant",
+              content: firstMessage,
+              createdAt: now,
+            },
+          ],
+        };
+        setChats([chat]);
+        setActiveId(id);
+      },
+    };
+    onReady(controls);
+  }, [onReady, setOpen, setChats, setActiveId, firstMessage]);
+
+  // Optional: Rehydrate history from server for this external user
+  useEffect(() => {
+    let cancelled = false;
+    if (!client) return;
+    (async () => {
+      try {
+        const list = await client.listChats();
+        const items: any[] = list.items || [];
+        // Map to lightweight Chat entries; we'll fetch messages for the most recent one
+        const mapped: Chat[] = items.map((it) => ({
+          id: crypto.randomUUID(),
+          serverId: it.chat_id,
+          createdAt: Date.parse(it.updated_at || it.created_at) || Date.now(),
+          title: (it.title || "Untitled chat"),
+          messages: [],
+        }));
+        const proj = items[0]?.project_name;
+        if (proj) setHistoryTitle(proj);
+        if (cancelled) return;
+        if (mapped.length === 0) return; // keep local default chat
+
+        // Fetch latest chat history to populate
+        const latest = mapped[0];
+        const hist = await client.getChat(latest.serverId!);
+        const msgs = (hist.messages || []).map((m: any) => ({
+          id: m.id || crypto.randomUUID(),
+          role: (m.role || "ASSISTANT").toString().toLowerCase(),
+          content: m.content || "",
+          createdAt: Date.parse(m.created_at || new Date().toISOString()) || Date.now(),
+        }));
+        latest.messages = msgs.length
+          ? msgs
+          : [
+              {
+                id: crypto.randomUUID(),
+                role: "assistant",
+                content: firstMessage,
+                createdAt: Date.now(),
+              },
+            ];
+        if (cancelled) return;
+        setChats([latest, ...mapped.slice(1)]);
+        setActiveId(latest.id);
+      } catch {
+        // ignore network errors; keep local state
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [client, setChats, setActiveId, firstMessage]);
+
+  // Streaming sender when API is enabled
+  const onSendMessage = client
+    ? async ({ text, chat, updateThinking }: { text: string; chat: Chat; thinkingId: string; updateThinking: (content: string, done?: boolean) => void }) => {
+        let acc = "";
+        try {
+          const result = await client.streamQuery(
+            { query: text, chat_id: chat.serverId || null },
+            {
+              onToken: (delta) => {
+                acc += delta;
+                updateThinking(acc, false);
+              },
+              onStatus: (s: string) => {
+                if (!acc) updateThinking(s, false);
+              },
+            }
+          );
+          const finalText = result.answer || acc || "(no answer)";
+          updateThinking(finalText, true);
+      if (result.chat_id) {
+            setChats((xs) => xs.map((c) => (c.id === chat.id ? { ...c, serverId: result.chat_id, title: (result as any).title || c.title } : c)));
+          }
+        } catch (e) {
+          updateThinking("Sorry, I couldn’t reach the server.", true);
+        }
+      }
+    : undefined;
+
   return (
     <div
       style={cssVars as React.CSSProperties}
       className={`fixed inset-0 pointer-events-none z-[60] ${theme.mode === "dark" ? "dark" : ""}`}
     >
-      <Launcher open={open} onToggle={toggleOpen} avatarImageUrl={avatarImageUrl} />
+      <Launcher open={open} onToggle={toggleOpen} avatarImageUrl={resolvedAvatar} titleText={strings?.launcherTitle} subtitleText={strings?.launcherSubtitle} />
       <AnimatePresence initial={false}>
         {open && (
           <ChatWindow
-            avatarName={avatarName}
-            avatarImageUrl={avatarImageUrl}
+            avatarName={resolvedName}
+            avatarImageUrl={resolvedAvatar}
             bannerImageUrl={bannerImageUrl}
-            companyName={companyName}
+            companyName={resolvedCompany}
             theme={theme}
             setTheme={setTheme}
             chats={chats}
             setChats={setChats}
             activeChat={activeChat}
             setActiveId={setActiveId}
-            versionTag={versionTag}
+            versionTag={"v1.0  ."}
             muted={muted}
             setMuted={setMuted}
             onClose={() => setOpen(false)}
             play={play}
+            onSendMessage={onSendMessage}
+            strings={{
+              headerSubtitle: strings?.headerSubtitle || welcomeMessage,
+              bannerTagline: strings?.bannerTagline,
+              inputPlaceholder: strings?.inputPlaceholder || "Type message...",
+              thinkingLabel: strings?.thinkingLabel || "Thinking…",
+              poweredByPrefix: "Powered by",
+              poweredByBrand: "AetherLink",
+              splashPoweredByBrand: "AetherLink",
+              initialAssistantMessage: firstMessage,
+            } as TextOverrides & { initialAssistantMessage?: string }}
+            initialShowHistory={chatHistoryMode === "show-history"}
+            widthPercent={widthPercent}
+            heightPercent={heightPercent}
+            historyTitle={historyTitle}
+            onSelectHistoryChat={client ? async (c) => {
+              try {
+                if (!c.serverId) return;
+                const hist = await client.getChat(c.serverId);
+                const msgs = (hist.messages || []).map((m: any) => ({
+                  id: m.id || crypto.randomUUID(),
+                  role: (m.role || "ASSISTANT").toString().toLowerCase(),
+                  content: m.content || "",
+                  createdAt: Date.parse(m.created_at || new Date().toISOString()) || Date.now(),
+                }));
+                setChats((xs) => xs.map((x) => (x.id === c.id ? { ...x, messages: msgs, title: hist.title || x.title } : x)));
+                setActiveId(c.id);
+              } catch {}
+            } : undefined}
           />
         )}
       </AnimatePresence>
