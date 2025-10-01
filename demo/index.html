@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aetherbot Widget Demo</title>
+    <script>
+      window.tailwind = { config: { darkMode: "class" } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html, body, #root { height: 100%; }
+      body { background: white; }
+      .dark body { background: #000; }
+      .bg-grid::before { opacity: .6; }
+      /* subtle grid */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px);
+        background-size: 64px 64px;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="bg-grid"></div>
+    <script type="module" src="/main.tsx"></script>
+  </body>
+  
+</html>
