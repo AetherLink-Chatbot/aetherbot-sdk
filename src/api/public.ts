@@ -100,6 +100,19 @@ export class PublicApiClient {
 
     return final ?? {};
   }
+
+  async assignAb(params: { testPercentage: number; userId?: string | null }): Promise<{ show: boolean }> {
+    const url = new URL(`/public/ab/${encodeURIComponent(this.cfg.avatarId)}/assign`, this.cfg.apiBaseUrl);
+    const body: any = { testPercentage: params.testPercentage } as any;
+    if (params.userId && params.userId !== "guest-user") body.userId = params.userId;
+    const res = await fetch(url.toString(), {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`AB assign failed: ${res.status}`);
+    return res.json();
+  }
 }
 
 export function createPublicApiClient(cfg: PublicApiClientConfig) {

@@ -1,0 +1,1 @@
+.aether-input{background-color:var(--aether-bg);color:var(--aether-text);border-color:#0000001f}.aether-input::placeholder{color:#7f7f7fb3}.aether-input:focus{outline:none;border-color:var(--aether-secondary);box-shadow:0 0 0 2px #0000000a,0 0 0 3px var(--aether-secondary)}.aether-banner-overlay{background:linear-gradient(135deg,var(--aether-secondary),transparent);opacity:.5}

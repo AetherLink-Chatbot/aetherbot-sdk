@@ -18,7 +18,6 @@ export interface Chat {
 }
 
 export interface ThemeConfig {
-  mode: "light" | "dark";
   text: string; // global text color
   background: string; // widget background color
   secondary: string; // accents: FAB, icons, user bubble, send button
@@ -55,6 +54,9 @@ export interface AetherChatWidgetProps {
   widthPercent?: number; // target width percent of viewport (clamped to design)
   heightPercent?: number; // max height percent of viewport (clamped)
   showAvatars?: boolean; // accepted but not altering layout by default
+  
+  // A/B testing for widget visibility
+  abTesting?: ABTestingConfig;
   
   // Copy/text overrides
   strings?: TextOverrides;
@@ -97,4 +99,9 @@ export interface TextOverrides {
   poweredByPrefix?: string; // "Powered by"
   poweredByBrand?: string; // "aetherlink"
   splashPoweredByBrand?: string; // IntroSplash brand text
+}
+
+export interface ABTestingConfig {
+  testPercentage: number; // 0..100
+  persistAssignment?: boolean; // for guests, persist local assignment
 }

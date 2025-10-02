@@ -1,14 +1,11 @@
 import React from "react";
-import { History, Minus, Moon, Sun, Volume2, VolumeX, X } from "lucide-react";
+import { History, Minus, Volume2, VolumeX, X } from "lucide-react";
 import { IconButton } from "./IconButton";
 import { AvatarImg } from "./AvatarImg";
-import { ThemeConfig } from "../types";
 
 export function Header({
   avatarImageUrl,
   avatarName,
-  theme,
-  setTheme,
   muted,
   setMuted,
   onHistory,
@@ -17,8 +14,6 @@ export function Header({
 }: {
   avatarImageUrl: string;
   avatarName: string;
-  theme: ThemeConfig;
-  setTheme: (t: ThemeConfig | ((t: ThemeConfig) => ThemeConfig)) => void;
   muted: boolean;
   setMuted: (v: boolean) => void;
   onHistory: () => void;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { AetherChatWidgetProps, Chat, ThemeConfig } from "../types";
+import { AetherChatWidgetProps, Chat } from "../types";
 import { Header } from "./Header";
 import { Banner } from "./Banner";
 import { ConversationArea } from "./Conversation";
@@ -13,13 +13,10 @@ export function ChatWindow({
   avatarImageUrl,
   bannerImageUrl,
   companyName,
-  theme,
-  setTheme,
   chats,
   setChats,
   activeChat,
   setActiveId,
-  versionTag,
   muted,
   setMuted,
   onClose,
@@ -31,9 +28,8 @@ export function ChatWindow({
   heightPercent,
   historyTitle,
   onSelectHistoryChat,
+  guestMode,
 }: Pick<AetherChatWidgetProps, "avatarName" | "avatarImageUrl" | "bannerImageUrl" | "companyName" | "versionTag"> & {
-  theme: ThemeConfig;
-  setTheme: (t: ThemeConfig | ((t: ThemeConfig) => ThemeConfig)) => void;
   chats: Chat[];
   setChats: React.Dispatch<React.SetStateAction<Chat[]>>;
   activeChat: Chat;
@@ -54,6 +50,7 @@ export function ChatWindow({
   heightPercent?: number;
   historyTitle?: string;
   onSelectHistoryChat?: (chat: Chat) => void;
+  guestMode?: boolean;
 }) {
   const [showHistory, setShowHistory] = useState(!!initialShowHistory);
   const [phase, setPhase] = useState<"splash" | "chat">("splash");
@@ -91,8 +88,6 @@ export function ChatWindow({
         <Header
           avatarName={avatarName}
           avatarImageUrl={avatarImageUrl}
-          theme={theme}
-          setTheme={setTheme}
           muted={muted}
           setMuted={setMuted}
           onHistory={() => setShowHistory(true)}
@@ -112,7 +107,7 @@ export function ChatWindow({
 
       <HistoryDrawer
         show={showHistory}
-        chats={chats}
+        chats={guestMode ? chats.filter((c)=>!!c.serverId) : chats}
         activeId={activeChat.id}
         setActiveId={setActiveId}
         onClose={() => setShowHistory(false)}

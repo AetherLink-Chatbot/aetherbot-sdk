@@ -19,7 +19,6 @@ export type CreateWidgetOptions = {
   companyName?: string;
   organizationName?: string;
   theme?: {
-    mode?: "light" | "dark";
     text?: string;
     background?: string;
     secondary?: string;
@@ -41,6 +40,12 @@ export type CreateWidgetOptions = {
 
   // Copy overrides
   strings?: TextOverrides;
+
+  // A/B testing (widget visibility)
+  abTesting?: {
+    testPercentage: number;
+    persistAssignment?: boolean;
+  };
 };
 
 export type WidgetController = {
@@ -89,6 +94,7 @@ export function createWidget(opts: CreateWidgetOptions): WidgetController {
         widthPercent: opts.widthPercent,
         heightPercent: opts.heightPercent,
         strings: opts.strings,
+        abTesting: opts.abTesting,
         onReady: (c: any) => {
           controls = c;
         },

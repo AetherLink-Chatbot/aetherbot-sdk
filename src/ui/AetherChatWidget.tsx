@@ -9,7 +9,6 @@ import { createPublicApiClient } from "../api/public";
 import "./styles/theme.css";
 
 const initialTheme: ThemeConfig = {
-  mode: "light",
   text: "#111111",
   background: "#ffffff",
   secondary: "#7c3aed", // accent
@@ -41,6 +40,7 @@ export default function AetherChatWidget({
   widthPercent,
   heightPercent,
   strings,
+  abTesting,
 }: AetherChatWidgetProps) {
   const resolvedName = avatarName || displayName || "Aetherbot";
   const resolvedCompany = companyName || organizationName || "Aetherlink";
@@ -85,12 +85,7 @@ export default function AetherChatWidget({
     if (!activeChat && chats.length) setActiveId(chats[0].id);
   }, [chats, activeChat, setActiveId]);
 
-  // Also mirror dark mode onto <html> to make the demo page reflect the theme.
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme.mode === "dark") root.classList.add("dark");
-    else root.classList.remove("dark");
-  }, [theme.mode]);
+  // Dark/light mode removed; colors are controlled purely by theme variables.
 
   const cssVars = useMemo(
     () => ({
@@ -143,6 +138,7 @@ export default function AetherChatWidget({
   // Prepare API client if config provided
   const API_BASE = "https://aetherbot.dev";
   const canLive = apiKey && avatarId && externalUserId;
+  const guestMode = (externalUserId || "").toLowerCase() === "guest-user";
   const client = useMemo(() => {
     if (!canLive) return null;
     return createPublicApiClient({
@@ -188,6 +184,7 @@ export default function AetherChatWidget({
   useEffect(() => {
     let cancelled = false;
     if (!client) return;
+    if (guestMode) return; // Do not fetch past chats for guest users
     (async () => {
       try {
         const list = await client.listChats();
@@ -236,6 +233,58 @@ export default function AetherChatWidget({
     };
   }, [client, setChats, setActiveId, firstMessage]);
 
+  // A/B testing assignment to decide widget visibility
+  const [abShow, setAbShow] = useState<boolean>(() => (abTesting ? false : true));
+  useEffect(() => {
+    let cancelled = false;
+    const cfg = abTesting;
+    if (!cfg || typeof cfg.testPercentage !== 'number') {
+      setAbShow(true);
+      return;
+    }
+    const pct = Math.max(0, Math.min(100, Math.floor(cfg.testPercentage)));
+    const lsKey = avatarId ? `aether.widget.ab.${avatarId}.${guestMode ? 'guest' : (externalUserId || 'anon')}` : `aether.widget.ab.default`;
+
+    // For guests with persistence, prefer local cached choice
+    if (guestMode && cfg.persistAssignment) {
+      try {
+        const raw = localStorage.getItem(lsKey);
+        if (raw) {
+          const parsed = JSON.parse(raw || '{}');
+          if (typeof parsed.show === 'boolean') {
+            setAbShow(parsed.show);
+            return;
+          }
+        }
+      } catch {}
+    }
+
+    (async () => {
+      try {
+        // Prefer server assignment if we can call it; otherwise fallback to client-side coin flip
+        let show: boolean;
+        if (client) {
+          const res = await (client as any).assignAb?.({ testPercentage: pct, userId: externalUserId || null });
+          show = typeof res?.show === 'boolean' ? !!res.show : true;
+        } else {
+          // Fallback: guests or missing creds → local random
+          const roll = Math.floor(Math.random() * 100) + 1; // 1..100
+          show = roll <= pct;
+        }
+        if (cancelled) return;
+        setAbShow(show);
+        if (guestMode && abTesting?.persistAssignment) {
+          try { localStorage.setItem(lsKey, JSON.stringify({ show })); } catch {}
+        }
+      } catch {
+        // On error, default to showing the widget
+        if (!cancelled) setAbShow(true);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [abTesting, client, avatarId, externalUserId, guestMode]);
+
   // Streaming sender when API is enabled
   const onSendMessage = client
     ? async ({ text, chat, updateThinking }: { text: string; chat: Chat; thinkingId: string; updateThinking: (content: string, done?: boolean) => void }) => {
@@ -269,10 +318,12 @@ export default function AetherChatWidget({
       root.style.setProperty(key, value as string);
     });
 
+  if (abTesting && !abShow) return null;
+
   return (
     <div
       style={cssVars as React.CSSProperties}
-      className={`fixed inset-0 pointer-events-none z-[60] ${theme.mode === "dark" ? "dark" : ""}`}
+      className={`fixed inset-0 pointer-events-none z-[60]`}
     >
       <Launcher open={open} onToggle={toggleOpen} avatarImageUrl={resolvedAvatar} titleText={strings?.launcherTitle} subtitleText={strings?.launcherSubtitle} />
       <AnimatePresence initial={false}>
@@ -282,8 +333,6 @@ export default function AetherChatWidget({
             avatarImageUrl={resolvedAvatar}
             bannerImageUrl={bannerImageUrl}
             companyName={resolvedCompany}
-            theme={theme}
-            setTheme={setTheme}
             chats={chats}
             setChats={setChats}
             activeChat={activeChat}
@@ -294,6 +343,7 @@ export default function AetherChatWidget({
             onClose={() => setOpen(false)}
             play={play}
             onSendMessage={onSendMessage}
+            guestMode={guestMode}
             strings={{
               headerSubtitle: strings?.headerSubtitle || welcomeMessage,
               bannerTagline: strings?.bannerTagline,

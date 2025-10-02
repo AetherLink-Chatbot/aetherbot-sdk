@@ -23,13 +23,13 @@ const defaults = {
   widthPercent: 75,
   heightPercent: 78,
   theme: {
-    mode: "light" as const,
     text: "#0f172a",
     background: "#ffffff",
     secondary: "#6366f1",
     aiMessageBg: "#f6f6f7",
     bannerText: "#ffffff",
   },
+  abTesting: { testPercentage: 50, persistAssignment: true },
   strings: {
     launcherTitle: "Let's Chat, Your Way",
     launcherSubtitle: "This chatbot adapts to your style of conversation.",
@@ -174,12 +174,6 @@ const App = () => {
             <Field label="Banner text color">
               <input type="color" className="h-9 w-14 border rounded" value={cfg.theme.bannerText} onChange={(e)=>setCfg({...cfg, theme: { ...cfg.theme, bannerText: e.target.value }})} />
             </Field>
-            <Field label="Mode">
-              <select className="w-full border rounded px-2 py-1" value={cfg.theme.mode} onChange={(e)=>setCfg({...cfg, theme: { ...cfg.theme, mode: e.target.value }})}>
-                <option value="light">light</option>
-                <option value="dark">dark</option>
-              </select>
-            </Field>
           </div>
 
           <div className="rounded-2xl border border-zinc-200 p-4 md:col-span-2">
@@ -210,6 +204,27 @@ const App = () => {
               {/* History title and new chat title are provided by API */}
               {/* Splash brand is static */}
             </div>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-200 p-4 md:col-span-2">
+            <h3 className="font-medium mb-3">A/B Testing</h3>
+            <Field label="Test Percentage (0-100)">
+              <input
+                type="number"
+                min={0}
+                max={100}
+                className="w-full border rounded px-2 py-1"
+                value={cfg.abTesting?.testPercentage ?? 50}
+                onChange={(e)=>setCfg({...cfg, abTesting: { ...(cfg.abTesting||{}), testPercentage: Number(e.target.value) }})}
+              />
+            </Field>
+            <Field label="Persist Assignment (guests)">
+              <input
+                type="checkbox"
+                checked={!!cfg.abTesting?.persistAssignment}
+                onChange={(e)=>setCfg({...cfg, abTesting: { ...(cfg.abTesting||{ testPercentage: 50 }), persistAssignment: e.target.checked }})}
+              />
+            </Field>
           </div>
         </div>
 

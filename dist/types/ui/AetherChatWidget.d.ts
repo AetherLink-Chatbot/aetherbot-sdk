@@ -1,2 +1,0 @@
-import { AetherChatWidgetProps } from "./types";
-export default function AetherChatWidget({ avatarName, displayName, avatarImageUrl, avatarImage, bannerImageUrl, companyName, organizationName, theme: themeProp, versionTag, firstMessage, welcomeMessage, apiKey, avatarId, externalUserId, externalUserName, onReady, autoOpenMode, autoOpenDelaySeconds, autoOpenScrollPercentage, chatHistoryMode, widthPercent, heightPercent, strings, }: AetherChatWidgetProps): import("react/jsx-runtime").JSX.Element;
