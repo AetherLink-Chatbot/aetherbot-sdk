@@ -9,8 +9,8 @@ export function Banner({ bannerImageUrl, companyName, taglineText }: { bannerIma
       <div className="relative overflow-hidden rounded-2xl">
         {/* Placeholder/random banner image by default */}
         <img src={bannerImageUrl} alt="banner" onError={onErr} className="h-28 w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-[var(--aether-primary)]/70 to-transparent" />
-        <div className="absolute left-4 top-4 text-white">
+        <div className="absolute inset-0 aether-banner-overlay" />
+        <div className="absolute left-4 top-4" style={{ color: "var(--aether-banner-text)" } as React.CSSProperties}>
           <p className="font-semibold">{companyName}</p>
           <p className="text-xs opacity-90 max-w-[240px]">
             {taglineText || "Every conversation matters, and this chatbot makes it worthwhile."}

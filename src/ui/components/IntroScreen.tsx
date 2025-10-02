@@ -5,7 +5,10 @@ export function IntroScreen({ companyName }: { companyName: string }) {
   return (
     <div className="px-6 py-10 text-center select-none">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="mx-auto h-16 w-16 rounded-2xl grid place-items-center text-[var(--aether-primary)] border-2 border-current/40">
+        <div
+          className="mx-auto h-16 w-16 rounded-2xl grid place-items-center border-2 border-current/40"
+          style={{ color: "var(--aether-secondary)" } as React.CSSProperties}
+        >
           {/* simple network-like icon using dots/lines */}
           <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="1.5">
             <circle cx="6" cy="12" r="2" />
@@ -30,7 +33,9 @@ export function IntroScreen({ companyName }: { companyName: string }) {
 
 function Spinner() {
   return (
-    <div className="h-5 w-5 border-2 border-zinc-300 dark:border-zinc-700 border-t-[var(--aether-primary)] rounded-full animate-spin" />
+    <div
+      className="h-5 w-5 border-2 border-zinc-300 dark:border-zinc-700 rounded-full animate-spin"
+      style={{ borderTopColor: "var(--aether-secondary)" } as React.CSSProperties}
+    />
   );
 }
-

@@ -18,10 +18,12 @@ export interface Chat {
 }
 
 export interface ThemeConfig {
-  primary: string; // CSS color
-  secondary?: string; // optional secondary color
-  text?: string; // optional text color
   mode: "light" | "dark";
+  text: string; // global text color
+  background: string; // widget background color
+  secondary: string; // accents: FAB, icons, user bubble, send button
+  aiMessageBg: string; // AI message bubble background
+  bannerText: string; // banner text color
 }
 
 export interface AetherChatWidgetProps {

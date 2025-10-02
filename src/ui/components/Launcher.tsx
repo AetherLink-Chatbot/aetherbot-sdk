@@ -45,7 +45,8 @@ export function Launcher({
             key="launcher-close"
             aria-label="Close chat"
             onClick={onToggle}
-            className="h-14 w-14 rounded-full grid place-items-center bg-violet-600 text-white shadow-xl hover:bg-violet-700 transition-colors"
+            className="h-14 w-14 rounded-full grid place-items-center text-white shadow-xl transition-colors"
+            style={{ backgroundColor: "var(--aether-secondary)" } as React.CSSProperties}
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             exit={{ scale: 0, rotate: 180 }}
@@ -89,8 +90,9 @@ function LauncherCard({
           <AvatarImg 
             src={avatarImageUrl} 
             alt="Chatbot Avatar" 
-            className="h-12 w-12 rounded-full ring-2 ring-violet-100 dark:ring-violet-900/30" 
+            className="h-12 w-12 rounded-full" 
           />
+          <span className="absolute inset-0 rounded-full" style={{ boxShadow: "0 0 0 2px var(--aether-secondary) inset" } as React.CSSProperties} />
           {/* Online indicator */}
           <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900" />
         </motion.div>
@@ -108,19 +110,11 @@ function LauncherCard({
 
       {/* Floating Message Icon */}
       <motion.div
-        className="absolute right-2 top-1/2 h-14 w-14 rounded-full grid place-items-center text-white bg-gradient-to-br from-violet-600 to-purple-700 shadow-lg cursor-pointer"
-        style={{ transform: "translateY(-50%)" }}
+        className="absolute right-2 top-1/2 h-14 w-14 rounded-full grid place-items-center text-white shadow-lg cursor-pointer"
+        style={{ transform: "translateY(-50%)", backgroundColor: "var(--aether-secondary)" } as React.CSSProperties}
         onClick={onClick}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
-        animate={{
-          boxShadow: [
-            "0 4px 14px rgba(124, 58, 237, 0.4)",
-            "0 4px 24px rgba(124, 58, 237, 0.6)",
-            "0 4px 14px rgba(124, 58, 237, 0.4)",
-          ],
-        }}
-        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
       >
         <motion.div
           animate={{ rotate: [0, 8, -8, 0] }}
@@ -131,7 +125,8 @@ function LauncherCard({
         
         {/* Ping effect */}
         <motion.span
-          className="absolute inset-0 rounded-full bg-violet-400"
+          className="absolute inset-0 rounded-full"
+          style={{ backgroundColor: "var(--aether-secondary)" } as React.CSSProperties}
           initial={{ scale: 1, opacity: 0.5 }}
           animate={{ scale: 1.5, opacity: 0 }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}

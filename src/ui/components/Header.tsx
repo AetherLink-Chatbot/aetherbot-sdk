@@ -34,16 +34,12 @@ export function Header({
             <p className="font-semibold leading-none">{avatarName}</p>
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">{subtitleText || "Adaptable chatbot service"}</p>
+          <p className="text-xs" style={{ color: "var(--aether-text)", opacity: 0.7 } as React.CSSProperties}>
+            {subtitleText || "Adaptable chatbot service"}
+          </p>
         </div>
       </div>
       <div className="flex items-center gap-1.5 text-zinc-500">
-        <IconButton
-          label="Toggle theme"
-          onClick={() => setTheme((t) => ({ ...t, mode: t.mode === "dark" ? "light" : "dark" }))}
-        >
-          {theme.mode === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </IconButton>
         <IconButton label={muted ? "Unmute" : "Mute"} onClick={() => setMuted(!muted)}>
           {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
         </IconButton>

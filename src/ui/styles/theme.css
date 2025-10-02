@@ -1,0 +1,21 @@
+/* Theme utility styles for Aether widget */
+
+.aether-input {
+  background-color: var(--aether-bg);
+  color: var(--aether-text);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.aether-input::placeholder {
+  color: rgba(127, 127, 127, 0.7);
+}
+.aether-input:focus {
+  outline: none;
+  border-color: var(--aether-secondary);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.04), 0 0 0 3px var(--aether-secondary);
+}
+
+.aether-banner-overlay {
+  background: linear-gradient(135deg, var(--aether-secondary), transparent);
+  opacity: 0.5;
+}
+

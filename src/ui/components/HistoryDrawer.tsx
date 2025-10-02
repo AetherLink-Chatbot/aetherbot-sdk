@@ -31,7 +31,8 @@ export function HistoryDrawer({
         <motion.div className="fixed inset-0 z-[70]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <div className="absolute inset-0 bg-black/40" onClick={onClose} />
           <motion.aside
-            className="absolute right-6 bottom-24 w-[380px] sm:w-[420px] rounded-3xl bg-white dark:bg-zinc-900 shadow-2xl overflow-hidden"
+            className="absolute right-6 bottom-24 w-[380px] sm:w-[420px] rounded-3xl shadow-2xl overflow-hidden"
+            style={{ backgroundColor: "var(--aether-bg)", color: "var(--aether-text)" } as React.CSSProperties}
             initial={{ x: 24, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 24, opacity: 0 }}
@@ -40,7 +41,11 @@ export function HistoryDrawer({
             <div className="p-4 flex items-center justify-between border-b border-zinc-200/60 dark:border-white/10">
               <p className="font-semibold">{titleText || "Past chats"}</p>
               <div className="flex items-center gap-2">
-                <button onClick={onStartNew} className="px-3 py-1.5 text-sm rounded-full bg-[var(--aether-primary)] text-white hover:opacity-90">
+                <button
+                  onClick={onStartNew}
+                  className="px-3 py-1.5 text-sm rounded-full text-white hover:opacity-90"
+                  style={{ backgroundColor: "var(--aether-secondary)" } as React.CSSProperties}
+                >
                   {newChatText || "New chat"}
                 </button>
                 <button onClick={onClose} className="h-8 w-8 grid place-items-center rounded-full hover:bg-zinc-100 dark:hover:bg-white/10" aria-label="Close history">
@@ -64,7 +69,9 @@ export function HistoryDrawer({
                   )}
                 >
                   <p className="text-sm font-medium truncate">{c.title}</p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{new Date(c.createdAt).toLocaleString()}</p>
+                  <p className="text-xs" style={{ color: "var(--aether-text)", opacity: 0.7 } as React.CSSProperties}>
+                    {new Date(c.createdAt).toLocaleString()}
+                  </p>
                 </button>
               ))}
             </div>

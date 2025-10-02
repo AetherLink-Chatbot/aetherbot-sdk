@@ -6,10 +6,15 @@ import { defaultAvatar, defaultBanner } from "./utils";
 import Launcher from "./components/Launcher";
 import { ChatWindow } from "./components/ChatWindow";
 import { createPublicApiClient } from "../api/public";
+import "./styles/theme.css";
 
 const initialTheme: ThemeConfig = {
-  primary: "#7c3aed", // violet-600
   mode: "light",
+  text: "#111111",
+  background: "#ffffff",
+  secondary: "#7c3aed", // accent
+  aiMessageBg: "#f6f6f7",
+  bannerText: "#ffffff",
 };
 
 export default function AetherChatWidget({
@@ -89,12 +94,13 @@ export default function AetherChatWidget({
 
   const cssVars = useMemo(
     () => ({
-      // @ts-ignore
-      "--aether-primary": theme.primary,
-      "--aether-secondary": theme.secondary || theme.primary,
-      "--aether-text": theme.text || (theme.mode === "dark" ? "#fff" : "#000"),
+      "--aether-text": theme.text || '#ffffff',
+      "--aether-bg": theme.background || '#000000',
+      "--aether-secondary": theme.secondary || '#783990',
+      "--aether-ai-bg": theme.aiMessageBg || '#f60000ff',
+      "--aether-banner-text": theme.bannerText || '#00ff6aff',
     }),
-    [theme.primary, theme.secondary, theme.text, theme.mode]
+    [theme.text, theme.background, theme.secondary, theme.aiMessageBg, theme.bannerText]
   );
 
   const toggleOpen = () => {
@@ -257,6 +263,11 @@ export default function AetherChatWidget({
         }
       }
     : undefined;
+
+    const root = document.documentElement;
+    Object.entries(cssVars).forEach(([key, value]) => {
+      root.style.setProperty(key, value as string);
+    });
 
   return (
     <div

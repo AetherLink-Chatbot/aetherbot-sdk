@@ -22,7 +22,14 @@ const defaults = {
   chatHistoryMode: "history" as const,
   widthPercent: 75,
   heightPercent: 78,
-  theme: { primary: "#4f46e5", secondary: "#6366f1", text: "#0f172a", mode: "light" as const },
+  theme: {
+    mode: "light" as const,
+    text: "#0f172a",
+    background: "#ffffff",
+    secondary: "#6366f1",
+    aiMessageBg: "#f6f6f7",
+    bannerText: "#ffffff",
+  },
   strings: {
     launcherTitle: "Let's Chat, Your Way",
     launcherSubtitle: "This chatbot adapts to your style of conversation.",
@@ -152,14 +159,20 @@ const App = () => {
 
           <div className="rounded-2xl border border-zinc-200 p-4">
             <h3 className="font-medium mb-3">Theme</h3>
-            <Field label="Primary color">
-              <input type="color" className="h-9 w-14 border rounded" value={cfg.theme.primary} onChange={(e)=>setCfg({...cfg, theme: { ...cfg.theme, primary: e.target.value }})} />
-            </Field>
-            <Field label="Secondary color">
-              <input type="color" className="h-9 w-14 border rounded" value={cfg.theme.secondary} onChange={(e)=>setCfg({...cfg, theme: { ...cfg.theme, secondary: e.target.value }})} />
-            </Field>
             <Field label="Text color">
               <input type="color" className="h-9 w-14 border rounded" value={cfg.theme.text} onChange={(e)=>setCfg({...cfg, theme: { ...cfg.theme, text: e.target.value }})} />
+            </Field>
+            <Field label="Background color">
+              <input type="color" className="h-9 w-14 border rounded" value={cfg.theme.background} onChange={(e)=>setCfg({...cfg, theme: { ...cfg.theme, background: e.target.value }})} />
+            </Field>
+            <Field label="Secondary color (FAB, user bubble, send)">
+              <input type="color" className="h-9 w-14 border rounded" value={cfg.theme.secondary} onChange={(e)=>setCfg({...cfg, theme: { ...cfg.theme, secondary: e.target.value }})} />
+            </Field>
+            <Field label="AI message box color">
+              <input type="color" className="h-9 w-14 border rounded" value={cfg.theme.aiMessageBg} onChange={(e)=>setCfg({...cfg, theme: { ...cfg.theme, aiMessageBg: e.target.value }})} />
+            </Field>
+            <Field label="Banner text color">
+              <input type="color" className="h-9 w-14 border rounded" value={cfg.theme.bannerText} onChange={(e)=>setCfg({...cfg, theme: { ...cfg.theme, bannerText: e.target.value }})} />
             </Field>
             <Field label="Mode">
               <select className="w-full border rounded px-2 py-1" value={cfg.theme.mode} onChange={(e)=>setCfg({...cfg, theme: { ...cfg.theme, mode: e.target.value }})}>

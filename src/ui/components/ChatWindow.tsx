@@ -84,7 +84,10 @@ export function ChatWindow({
       exit={{ opacity: 0, y: 16, scale: 0.98 }}
       transition={{ type: "spring", stiffness: 180, damping: 16 }}
     >
-      <div className="relative overflow-hidden rounded-3xl shadow-2xl bg-white dark:bg-black border border-white/60 dark:border-white/10">
+      <div
+        className="relative overflow-hidden rounded-3xl shadow-2xl border border-white/60 dark:border-white/10"
+        style={{ backgroundColor: "var(--aether-bg)", color: "var(--aether-text)" } as React.CSSProperties}
+      >
         <Header
           avatarName={avatarName}
           avatarImageUrl={avatarImageUrl}
@@ -101,7 +104,10 @@ export function ChatWindow({
         <AnimateContent phase={phase} companyName={companyName} bannerImageUrl={bannerImageUrl} activeChat={activeChat} setChats={setChats} onRetitle={(title)=>setChats((xs)=>xs.map((c)=>c.id===activeChat.id?{...c,title}:c))} play={play} versionTag={'v1.0  .'} onSendMessage={onSendMessage} strings={strings} />
 
         {/* Decorative bottom-right droplet */}
-        <div className="absolute -bottom-3 -right-2 h-8 w-8 rounded-full bg-white dark:bg-black shadow-md" />
+        <div
+          className="absolute -bottom-3 -right-2 h-8 w-8 rounded-full shadow-md"
+          style={{ backgroundColor: "var(--aether-bg)" } as React.CSSProperties}
+        />
       </div>
 
       <HistoryDrawer
@@ -165,7 +171,7 @@ function AnimateContent({
             thinkingText={strings?.thinkingLabel}
           />
           <div className="px-4 pb-2">
-            <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
+            <div className="mt-2 flex items-center justify-between text-[11px]" style={{ color: "var(--aether-text)", opacity: 0.7 } as React.CSSProperties}>
                <div className="flex items-center gap-1">
                  <Sparkles className="h-3.5 w-3.5" />
                  <span>

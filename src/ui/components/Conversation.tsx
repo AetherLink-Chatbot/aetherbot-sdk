@@ -117,11 +117,12 @@ export function ConversationArea({
               if (e.key === "Enter") send();
             }}
             placeholder={inputPlaceholder}
-            className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 pr-12 outline-none focus:ring-2 focus:ring-[var(--aether-primary)]/30 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500"
+            className="w-full rounded-2xl border px-4 py-3 pr-12 aether-input"
           />
           <button
             onClick={send}
-            className="absolute right-1.5 top-1.5 h-9 w-9 rounded-full bg-[var(--aether-primary)] text-white grid place-items-center hover:opacity-90 active:scale-95 transition"
+            className="absolute right-1.5 top-1.5 h-9 w-9 rounded-full text-white grid place-items-center hover:opacity-90 active:scale-95 transition"
+            style={{ backgroundColor: "var(--aether-secondary)" } as React.CSSProperties}
             aria-label="Send"
           >
             <Send className="h-4 w-4" />
@@ -142,10 +143,13 @@ function MessageBubble({ msg }: { msg: any }) {
         transition={{ type: "spring", stiffness: 200, damping: 18 }}
         className={classNames(
           "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm shadow-sm",
-          isUser
-            ? "bg-[var(--aether-primary)] text-white"
-            : "bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100"
+          isUser ? "text-white" : ""
         )}
+        style={
+          isUser
+            ? ({ backgroundColor: "var(--aether-secondary)" } as React.CSSProperties)
+            : ({ backgroundColor: "var(--aether-ai-bg)", color: "var(--aether-text)" } as React.CSSProperties)
+        }
       >
         {msg.thinking ? (
           <ThinkingRow label={msg.content} />
@@ -154,7 +158,10 @@ function MessageBubble({ msg }: { msg: any }) {
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
           </div>
         )}
-        <div className={classNames("mt-1 text-[10px] opacity-70", isUser ? "text-white" : "text-zinc-500 dark:text-zinc-400")}> 
+        <div
+          className={classNames("mt-1 text-[10px] opacity-70", isUser ? "text-white" : "")}
+          style={isUser ? undefined : ({ color: "var(--aether-text)" } as React.CSSProperties)}
+        > 
           {timeAgo(msg.createdAt)}
         </div>
       </motion.div>

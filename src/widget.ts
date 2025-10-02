@@ -18,7 +18,14 @@ export type CreateWidgetOptions = {
   bannerImageUrl?: string;
   companyName?: string;
   organizationName?: string;
-  theme?: { primary?: string; secondary?: string; text?: string; mode?: "light" | "dark" };
+  theme?: {
+    mode?: "light" | "dark";
+    text?: string;
+    background?: string;
+    secondary?: string;
+    aiMessageBg?: string;
+    bannerText?: string;
+  };
   versionTag?: string;
   firstMessage?: string;
   welcomeMessage?: string;
