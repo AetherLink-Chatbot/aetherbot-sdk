@@ -5375,8 +5375,8 @@ function Jf({
       {
         "aria-label": "Close chat",
         onClick: g,
-        className: "h-14 w-14 rounded-full grid place-items-center text-white shadow-xl transition-colors",
-        style: { backgroundColor: "var(--aether-secondary)" },
+        className: "h-14 w-14 rounded-full grid place-items-center shadow-xl transition-colors",
+        style: { backgroundColor: "var(--aether-secondary)", color: "#ffffff" },
         initial: { scale: 0, rotate: -180 },
         animate: { scale: 1, rotate: 0 },
         exit: { scale: 0, rotate: 180 },
@@ -5407,7 +5407,8 @@ function qf({
           RA.button,
           {
             onClick: A,
-            className: "relative flex items-center gap-3 rounded-2xl bg-white dark:bg-zinc-900 shadow-xl px-4 py-3.5 pr-[5rem] text-left border border-zinc-200/70 dark:border-zinc-700/50 hover:shadow-2xl transition-shadow",
+            className: "relative flex items-center gap-3 rounded-2xl shadow-xl px-4 py-3.5 pr-[5rem] text-left hover:shadow-2xl transition-shadow border",
+            style: { backgroundColor: "var(--aether-bg)", color: "var(--aether-text)", borderColor: "rgba(0,0,0,0.12)" },
             whileHover: { y: -2 },
             whileTap: { scale: 0.98 },
             children: [
@@ -5421,11 +5422,11 @@ function qf({
                   }
                 ),
                 /* @__PURE__ */ Y.jsx("span", { className: "absolute inset-0 rounded-full", style: { boxShadow: "0 0 0 2px var(--aether-secondary) inset" } }),
-                /* @__PURE__ */ Y.jsx("span", { className: "absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900" })
+                /* @__PURE__ */ Y.jsx("span", { className: "absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full", style: { backgroundColor: "#10b981", boxShadow: "0 0 0 2px var(--aether-bg)" } })
               ] }),
               /* @__PURE__ */ Y.jsxs("div", { className: "flex-1 min-w-0", children: [
-                /* @__PURE__ */ Y.jsx("p", { className: "text-sm font-semibold text-zinc-900 dark:text-white truncate", children: B }),
-                /* @__PURE__ */ Y.jsx("p", { className: "text-xs text-zinc-600 dark:text-zinc-400 leading-snug line-clamp-2", children: E })
+                /* @__PURE__ */ Y.jsx("p", { className: "text-sm font-semibold truncate", style: { color: "var(--aether-text)" }, children: B }),
+                /* @__PURE__ */ Y.jsx("p", { className: "text-xs leading-snug line-clamp-2", style: { color: "var(--aether-text)", opacity: 0.8 }, children: E })
               ] })
             ]
           }
@@ -5433,8 +5434,8 @@ function qf({
         /* @__PURE__ */ Y.jsxs(
           RA.div,
           {
-            className: "absolute right-2 top-1/2 h-14 w-14 rounded-full grid place-items-center text-white shadow-lg cursor-pointer",
-            style: { transform: "translateY(-50%)", backgroundColor: "var(--aether-secondary)" },
+            className: "absolute right-2 top-1/2 h-14 w-14 rounded-full grid place-items-center shadow-lg cursor-pointer",
+            style: { transform: "translateY(-50%)", backgroundColor: "var(--aether-secondary)", color: "#ffffff" },
             onClick: A,
             whileHover: { scale: 1.1 },
             whileTap: { scale: 0.95 },

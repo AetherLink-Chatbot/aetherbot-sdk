@@ -45,8 +45,8 @@ export function Launcher({
             key="launcher-close"
             aria-label="Close chat"
             onClick={onToggle}
-            className="h-14 w-14 rounded-full grid place-items-center text-white shadow-xl transition-colors"
-            style={{ backgroundColor: "var(--aether-secondary)" } as React.CSSProperties}
+            className="h-14 w-14 rounded-full grid place-items-center shadow-xl transition-colors"
+            style={{ backgroundColor: "var(--aether-secondary)", color: '#ffffff' } as React.CSSProperties}
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             exit={{ scale: 0, rotate: 180 }}
@@ -81,7 +81,8 @@ function LauncherCard({
       {/* Main Card */}
       <motion.button
         onClick={onClick}
-        className="relative flex items-center gap-3 rounded-2xl bg-white dark:bg-zinc-900 shadow-xl px-4 py-3.5 pr-[5rem] text-left border border-zinc-200/70 dark:border-zinc-700/50 hover:shadow-2xl transition-shadow"
+        className="relative flex items-center gap-3 rounded-2xl shadow-xl px-4 py-3.5 pr-[5rem] text-left hover:shadow-2xl transition-shadow border"
+        style={{ backgroundColor: 'var(--aether-bg)', color: 'var(--aether-text)', borderColor: 'rgba(0,0,0,0.12)' } as React.CSSProperties}
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.98 }}
       >
@@ -94,15 +95,15 @@ function LauncherCard({
           />
           <span className="absolute inset-0 rounded-full" style={{ boxShadow: "0 0 0 2px var(--aether-secondary) inset" } as React.CSSProperties} />
           {/* Online indicator */}
-          <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900" />
+          <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full" style={{ backgroundColor: '#10b981', boxShadow: '0 0 0 2px var(--aether-bg)' } as React.CSSProperties} />
         </motion.div>
 
         {/* Text content */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-zinc-900 dark:text-white truncate">
+          <p className="text-sm font-semibold truncate" style={{ color: 'var(--aether-text)' } as React.CSSProperties}>
             {titleText}
           </p>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-snug line-clamp-2">
+          <p className="text-xs leading-snug line-clamp-2" style={{ color: 'var(--aether-text)', opacity: 0.8 } as React.CSSProperties}>
             {subtitleText}
           </p>
         </div>
@@ -110,8 +111,8 @@ function LauncherCard({
 
       {/* Floating Message Icon */}
       <motion.div
-        className="absolute right-2 top-1/2 h-14 w-14 rounded-full grid place-items-center text-white shadow-lg cursor-pointer"
-        style={{ transform: "translateY(-50%)", backgroundColor: "var(--aether-secondary)" } as React.CSSProperties}
+        className="absolute right-2 top-1/2 h-14 w-14 rounded-full grid place-items-center shadow-lg cursor-pointer"
+        style={{ transform: "translateY(-50%)", backgroundColor: "var(--aether-secondary)", color: '#ffffff' } as React.CSSProperties}
         onClick={onClick}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
