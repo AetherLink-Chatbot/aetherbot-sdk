@@ -1,4 +1,5 @@
 import React from "react";
+import type { ThemeConfig } from "./ui/types";
 import { createRoot, Root } from "react-dom/client";
 import AetherChatWidget from "./ui/AetherChatWidget";
 import type { TextOverrides } from "./ui/types";
@@ -86,8 +87,34 @@ function ensureAetherStylesInjected() {
   }
 }
 
+const DEFAULT_THEME: ThemeConfig = {
+  text: "#111111",
+  background: "#ffffff",
+  secondary: "#7c3aed",
+  aiMessageBg: "#f6f6f7",
+  bannerText: "#ffffff",
+};
+
+function applyThemeVars(theme?: Partial<ThemeConfig>) {
+  if (typeof document === "undefined") return;
+  const merged: ThemeConfig = { ...DEFAULT_THEME, ...(theme || {}) } as ThemeConfig;
+  const root = document.documentElement;
+  try {
+    root.style.setProperty("--aether-text", merged.text);
+    root.style.setProperty("--aether-bg", merged.background);
+    root.style.setProperty("--aether-secondary", merged.secondary);
+    root.style.setProperty("--aether-ai-bg", merged.aiMessageBg);
+    root.style.setProperty("--aether-banner-text", merged.bannerText);
+  } catch {}
+  try {
+    // Sync to localStorage so first render in AetherChatWidget picks it up even if user had prior theme stored
+    localStorage.setItem("aether.widget.theme", JSON.stringify(merged));
+  } catch {}
+}
+
 export function createWidget(opts: CreateWidgetOptions): WidgetController {
   ensureAetherStylesInjected();
+  if (opts?.theme) applyThemeVars(opts.theme as Partial<ThemeConfig>);
   const container = document.createElement("div");
   container.setAttribute("data-aetherbot-widget", "");
   document.body.appendChild(container);
@@ -165,6 +192,7 @@ export function init(opts?: CreateWidgetOptions): WidgetController {
     ...(w?.aetherbotConfig || {}),
     ...(opts || {}),
   } as CreateWidgetOptions;
+  if (cfg?.theme) applyThemeVars(cfg.theme as Partial<ThemeConfig>);
   return createWidget(cfg);
 }
 export const AetherbotWidget = { createWidget, create, init, destroyAll };

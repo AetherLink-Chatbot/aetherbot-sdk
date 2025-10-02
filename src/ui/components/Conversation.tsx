@@ -117,7 +117,12 @@ export function ConversationArea({
               if (e.key === "Enter") send();
             }}
             placeholder={inputPlaceholder}
-            className="w-full rounded-2xl border px-4 py-3 pr-12 aether-input"
+            className="w-full rounded-2xl border px-4 py-3 pr-12"
+            style={{
+              backgroundColor: "var(--aether-bg)",
+              color: "var(--aether-text)",
+              borderColor: "var(--aether-secondary)",
+            }}
           />
           <button
             onClick={send}
