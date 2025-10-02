@@ -7,6 +7,7 @@ import Launcher from "./components/Launcher";
 import { ChatWindow } from "./components/ChatWindow";
 import { createPublicApiClient } from "../api/public";
 import "./styles/theme.css";
+import "./styles/utilities.css";
 
 const initialTheme: ThemeConfig = {
   text: "#111111",

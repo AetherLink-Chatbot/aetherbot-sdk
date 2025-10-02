@@ -58,7 +58,36 @@ export type WidgetController = {
 
 const registry = new Set<WidgetController>();
 
+let __aether_styles_injected = false;
+function ensureAetherStylesInjected() {
+  if (typeof document === "undefined" || __aether_styles_injected) return;
+  // Skip if aether style already present
+  if (document.querySelector('link[data-aetherbot-style], style[data-aetherbot-style]')) {
+    __aether_styles_injected = true;
+    return;
+  }
+  try {
+    const scripts = Array.from(document.getElementsByTagName("script"));
+    const self = scripts.find((s) => (s as HTMLScriptElement).src && (s as HTMLScriptElement).src.includes("aetherbot-sdk") );
+    let base = "";
+    if (self) {
+      const url = new URL((self as HTMLScriptElement).src, window.location.href);
+      base = url.href.slice(0, url.href.lastIndexOf("/") + 1);
+    }
+    const href = base + "style.css";
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    link.setAttribute("data-aetherbot-style", "");
+    document.head.appendChild(link);
+    __aether_styles_injected = true;
+  } catch {
+    // no-op
+  }
+}
+
 export function createWidget(opts: CreateWidgetOptions): WidgetController {
+  ensureAetherStylesInjected();
   const container = document.createElement("div");
   container.setAttribute("data-aetherbot-widget", "");
   document.body.appendChild(container);
@@ -130,6 +159,7 @@ export function destroyAll() {
 // UMD convenience aliases for legacy docs
 export const create = createWidget;
 export function init(opts?: CreateWidgetOptions): WidgetController {
+  ensureAetherStylesInjected();
   const w = (globalThis as any) || window;
   const cfg = {
     ...(w?.aetherbotConfig || {}),
