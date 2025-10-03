@@ -12,6 +12,7 @@ export function ConversationArea({
   onRetitle,
   onPlay,
   onSendMessage,
+  onSubmitContact,
   inputPlaceholder = "Type message...",
   thinkingText = "Thinking…",
 }: {
@@ -23,8 +24,16 @@ export function ConversationArea({
     text: string;
     chat: Chat;
     thinkingId: string;
-    updateThinking: (content: string, done?: boolean) => void;
+    updateThinking: (content: string, done?: boolean, options?: { contactForm?: { promptText: string; chatId?: string; messageId?: string } }) => void;
   }) => Promise<void> | void;
+  onSubmitContact?: (payload: {
+    chat_id: string;
+    message_id?: string | null;
+    name: string;
+    contact_method: 'email' | 'call' | string;
+    contact_value?: string | null;
+    concern_text: string;
+  }) => Promise<any>;
   inputPlaceholder?: string;
   thinkingText?: string;
 }) {
@@ -64,11 +73,13 @@ export function ConversationArea({
     }
 
     // If an external sender is provided, stream through it; otherwise mock
-    const updateThinking = (content: string, done = false) => {
+    const updateThinking = (content: string, done = false, options?: { contactForm?: { promptText: string; chatId?: string; messageId?: string } }) => {
       const next: Chat = {
         ...updated,
         messages: updated.messages.map((m) =>
-          m.id === thinking.id ? { ...m, content, thinking: !done } : m
+          m.id === thinking.id
+            ? { ...m, content, thinking: !done, contactForm: options?.contactForm ? { ...options.contactForm } : undefined }
+            : m
         ),
       };
       onUpdateChat(next);
@@ -104,7 +115,7 @@ export function ConversationArea({
     <div className="mt-3 flex flex-col h-[46vh]">
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 space-y-3">
         {chat.messages.map((m) => (
-          <MessageBubble key={m.id} msg={m} />
+          <MessageBubble key={m.id} msg={m} chat={chat} onUpdateChat={onUpdateChat} onSubmitContact={onSubmitContact} />
         ))}
       </div>
 
@@ -138,8 +149,57 @@ export function ConversationArea({
   );
 }
 
-function MessageBubble({ msg }: { msg: any }) {
+import { ContactRequestForm, ContactRequestValues } from './ContactRequestForm';
+
+function MessageBubble({ msg, chat, onUpdateChat, onSubmitContact }: { msg: any; chat?: Chat; onUpdateChat?: (chat: Chat) => void; onSubmitContact?: (payload: { chat_id: string; message_id?: string | null; name: string; contact_method: 'email' | 'call' | string; contact_value?: string | null; concern_text: string; }) => Promise<any>; }) {
   const isUser = msg.role === "user";
+  const [submitting, setSubmitting] = React.useState(false);
+
+  const handleFormSubmit = async (values: ContactRequestValues) => {
+    if (!onSubmitContact || !onUpdateChat) return;
+    const chatId = msg?.contactForm?.chatId || chat?.serverId;
+    if (!chatId) return; // cannot submit without a chat id
+    try {
+      setSubmitting(true);
+      await onSubmitContact({
+        chat_id: chatId,
+        message_id: msg?.contactForm?.messageId || undefined,
+        name: values.name,
+        contact_method: values.contact_method,
+        contact_value: values.contact_value,
+        concern_text: values.concern_text,
+      });
+      // Replace this bubble content with a confirmation and remove the form
+      onUpdateChat({
+        ...chat!,
+        messages: (chat!.messages || []).map((m) =>
+          m.id === msg.id
+            ? {
+                ...m,
+                content: `Thanks, I’ve forwarded your concern to a representative. They will contact you via ${values.contact_method === 'email' ? 'email' : 'phone'} soon.`,
+                contactForm: undefined,
+              }
+            : m
+        ),
+      });
+    } catch (e: any) {
+      // Show an inline error by updating the content but keep the form
+      const detail = (e?.message || 'Unable to send request');
+      onUpdateChat({
+        ...chat!,
+        messages: (chat!.messages || []).map((m) =>
+          m.id === msg.id
+            ? {
+                ...m,
+                content: `${msg?.contactForm?.promptText || m.content}\n\n> ${detail}`,
+              }
+            : m
+        ),
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
   return (
     <div className={classNames("flex", isUser ? "justify-end" : "justify-start")}>
       <motion.div
@@ -158,6 +218,12 @@ function MessageBubble({ msg }: { msg: any }) {
       >
         {msg.thinking ? (
           <ThinkingRow label={msg.content} />
+        ) : msg.contactForm ? (
+          <ContactRequestForm
+            promptText={msg.contactForm.promptText || msg.content}
+            onSubmit={handleFormSubmit}
+            submitting={submitting}
+          />
         ) : (
           <div className="prose prose-sm dark:prose-invert max-w-none">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>

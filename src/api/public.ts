@@ -58,6 +58,7 @@ export class PublicApiClient {
     const decoder = new TextDecoder();
     let buffer = "";
     let final: StreamResult | null = null;
+    let contactPayload: { contact_form?: string; chat_id?: string; message_id?: string } | null = null;
 
     while (true) {
       const { value, done } = await reader.read();
@@ -74,6 +75,14 @@ export class PublicApiClient {
             cb?.onToken?.(obj.final_answer);
           } else if (typeof obj.status === "string") {
             cb?.onStatus?.(obj.status);
+          } else if (typeof obj.contact_form === "string") {
+            contactPayload = {
+              contact_form: obj.contact_form,
+              chat_id: obj.chat_id,
+              message_id: obj.message_id,
+            };
+            // Keep tracking final object, but don't lose contact payload
+            final = { ...(final ?? {}), ...obj };
           } else {
             final = obj;
           }
@@ -92,10 +101,24 @@ export class PublicApiClient {
           cb?.onToken?.(obj.final_answer);
         } else if (typeof obj.status === "string") {
           cb?.onStatus?.(obj.status);
+        } else if (typeof obj.contact_form === "string") {
+          contactPayload = {
+            contact_form: obj.contact_form,
+            chat_id: obj.chat_id,
+            message_id: obj.message_id,
+          };
+          final = { ...(final ?? {}), ...obj };
         } else {
           final = obj;
         }
       } catch {}
+    }
+
+    // If we saw a contact_form payload at any point, preserve it in the final result
+    if (contactPayload) {
+      final = { ...(final ?? {}), ...contactPayload } as any;
+      if (!final!.chat_id && contactPayload.chat_id) (final as any).chat_id = contactPayload.chat_id;
+      if (!final!.message_id && contactPayload.message_id) (final as any).message_id = contactPayload.message_id;
     }
 
     return final ?? {};
@@ -111,6 +134,32 @@ export class PublicApiClient {
       body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(`AB assign failed: ${res.status}`);
+    return res.json();
+  }
+
+  async submitContact(body: {
+    chat_id: string;
+    message_id?: string | null;
+    name: string;
+    contact_method: 'email' | 'call' | string;
+    contact_value?: string | null;
+    concern_text: string;
+  }): Promise<any> {
+    const url = new URL(`/public/contacts`, this.cfg.apiBaseUrl);
+    const payload: any = {
+      ...body,
+      avatar_id: this.cfg.avatarId,
+    };
+    const res = await fetch(url.toString(), {
+      method: 'POST',
+      headers: this.headers(),
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      let detail = '';
+      try { detail = await res.text(); } catch {}
+      throw new Error(`Submit contact failed: ${res.status} ${detail || ''}`.trim());
+    }
     return res.json();
   }
 }

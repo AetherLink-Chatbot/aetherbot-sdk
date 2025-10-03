@@ -36,9 +36,6 @@ Add the UMD bundle and initialize the widget. The `apiBaseUrl` is fixed to `http
         autoOpenDelaySeconds: 5,
         autoOpenScrollPercentage: 45,
         chatHistoryMode: 'show-history',   // 'history' | 'always-new' | 'show-history'
-        widthPercent: 75,
-        heightPercent: 80,
-        showAvatars: true,
 
         // Theme
         theme: {
@@ -58,7 +55,6 @@ Add the UMD bundle and initialize the widget. The `apiBaseUrl` is fixed to `http
           bannerTagline: 'Every conversation matters, and this chatbot makes it worthwhile.',
           inputPlaceholder: 'Type message...',
           thinkingLabel: 'Thinking…',
-          splashPoweredByBrand: 'AetherLink'
         },
 
         // A/B testing (optional; see below)
@@ -80,30 +76,30 @@ Add the UMD bundle and initialize the widget. The `apiBaseUrl` is fixed to `http
 ## Options Reference
 
 - Required
+
   - `apiKey`: Public API key.
   - `avatarId`: The avatar UUID to connect.
   - `externalUserId`: Your user identifier; use `'guest-user'` when you do not have a signed-in user.
-
 - Presentation
-  - `displayName`, `organizationName`, `avatarImage`, `bannerImageUrl`.
 
+  - `displayName`, `organizationName`, `avatarImage`, `bannerImageUrl`.
 - Behavior/UX
-  - `autoOpenMode`: `'manual' | 'delay' | 'scroll' | 'hybrid'`.
+
+  - `autoOpenMode`: `'manual' | 'delay' | 'scroll'`.
   - `autoOpenDelaySeconds`, `autoOpenScrollPercentage`.
   - `chatHistoryMode`: `'history' | 'always-new' | 'show-history'`.
-  - `widthPercent`, `heightPercent`, `showAvatars`.
-
 - Theme
+
   - `theme.text`: Global text color.
   - `theme.background`: Widget background color.
   - `theme.secondary`: Accent color (FAB, icons, user bubble, send button).
   - `theme.aiMessageBg`: Assistant message bubble background.
   - `theme.bannerText`: Banner text color.
-
 - Copy
-  - `firstMessage`, `welcomeMessage`, and `strings` for small UI text overrides.
 
+  - `firstMessage`, `welcomeMessage`, and `strings` for small UI text overrides.
 - A/B Testing (optional)
+
   - `abTesting: { testPercentage: number; persistAssignment?: boolean }`.
   - When provided, the widget requests an assignment decision and only renders if `show === true`.
   - When omitted, A/B testing is skipped and the widget always shows.

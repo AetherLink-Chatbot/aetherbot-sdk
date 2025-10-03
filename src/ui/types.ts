@@ -6,6 +6,12 @@ export interface Message {
   content: string;
   createdAt: number;
   thinking?: boolean;
+  // Optional: assistant asks for contact details in-line
+  contactForm?: {
+    promptText: string;
+    chatId?: string;
+    messageId?: string;
+  };
 }
 
 export interface Chat {
@@ -87,6 +93,9 @@ export interface StreamResult {
   answer?: string;
   created_new_chat?: boolean;
   context?: unknown;
+  // Optional special payload to request a contact form from the user
+  contact_form?: string;
+  message_id?: string;
 }
 
 export interface TextOverrides {

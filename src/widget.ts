@@ -37,8 +37,6 @@ export type CreateWidgetOptions = {
   chatHistoryMode?: "history" | "always-new" | "show-history";
   widthPercent?: number;
   heightPercent?: number;
-  showAvatars?: boolean;
-
   // Copy overrides
   strings?: TextOverrides;
 

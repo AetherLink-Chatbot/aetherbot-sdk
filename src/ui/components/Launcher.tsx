@@ -81,8 +81,8 @@ function LauncherCard({
       {/* Main Card */}
       <motion.button
         onClick={onClick}
-        className="relative flex items-center gap-3 rounded-2xl shadow-xl px-4 py-3.5 pr-[5rem] text-left hover:shadow-2xl transition-shadow border"
-        style={{ backgroundColor: 'var(--aether-bg)', color: 'var(--aether-text)', borderColor: 'rgba(0,0,0,0.12)' } as React.CSSProperties}
+        className="relative flex items-center gap-3 rounded-2xl shadow-xl px-4 py-3.5 text-left hover:shadow-2xl transition-shadow border min-w-[320px] max-w-[400px]"
+        style={{ backgroundColor: 'var(--aether-bg)', color: 'var(--aether-text)', borderColor: 'rgba(0,0,0,0.12)', paddingRight: '80px' } as React.CSSProperties}
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.98 }}
       >
@@ -111,8 +111,8 @@ function LauncherCard({
 
       {/* Floating Message Icon */}
       <motion.div
-        className="absolute right-2 top-1/2 h-14 w-14 rounded-full grid place-items-center shadow-lg cursor-pointer"
-        style={{ transform: "translateY(-50%)", backgroundColor: "var(--aether-secondary)", color: '#ffffff' } as React.CSSProperties}
+        className="absolute top-1/2 h-14 w-14 rounded-full grid place-items-center shadow-lg cursor-pointer"
+        style={{ right: '12px', transform: "translateY(-50%)", backgroundColor: "var(--aether-secondary)", color: '#ffffff' } as React.CSSProperties}
         onClick={onClick}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
@@ -128,9 +128,8 @@ function LauncherCard({
         <motion.span
           className="absolute inset-0 rounded-full"
           style={{ backgroundColor: "var(--aether-secondary)" } as React.CSSProperties}
-          initial={{ scale: 1, opacity: 0.5 }}
-          animate={{ scale: 1.5, opacity: 0 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+          animate={{ scale: [1, 1.4, 1.4], opacity: [0.6, 0, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeOut", times: [0, 0.7, 1] }}
         />
       </motion.div>
     </motion.div>

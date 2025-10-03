@@ -192,7 +192,7 @@ export default function AetherChatWidget({
         const items: any[] = list.items || [];
         // Map to lightweight Chat entries; we'll fetch messages for the most recent one
         const mapped: Chat[] = items.map((it) => ({
-          id: crypto.randomUUID(),
+          id: it.chat_id,
           serverId: it.chat_id,
           createdAt: Date.parse(it.updated_at || it.created_at) || Date.now(),
           title: (it.title || "Untitled chat"),
@@ -207,7 +207,7 @@ export default function AetherChatWidget({
         const latest = mapped[0];
         const hist = await client.getChat(latest.serverId!);
         const msgs = (hist.messages || []).map((m: any) => ({
-          id: m.id || crypto.randomUUID(),
+          id: m.chat_id || crypto.randomUUID(),
           role: (m.role || "ASSISTANT").toString().toLowerCase(),
           content: m.content || "",
           createdAt: Date.parse(m.created_at || new Date().toISOString()) || Date.now(),
@@ -288,7 +288,7 @@ export default function AetherChatWidget({
 
   // Streaming sender when API is enabled
   const onSendMessage = client
-    ? async ({ text, chat, updateThinking }: { text: string; chat: Chat; thinkingId: string; updateThinking: (content: string, done?: boolean) => void }) => {
+    ? async ({ text, chat, updateThinking }: { text: string; chat: Chat; thinkingId: string; updateThinking: (content: string, done?: boolean, options?: { contactForm?: { promptText: string; chatId?: string; messageId?: string } }) => void }) => {
         let acc = "";
         try {
           const result = await client.streamQuery(
@@ -303,8 +303,19 @@ export default function AetherChatWidget({
               },
             }
           );
-          const finalText = result.answer || acc || "(no answer)";
-          updateThinking(finalText, true);
+          if ((result as any).contact_form) {
+            const cfText = (result as any).contact_form as string;
+            updateThinking(cfText, true, {
+              contactForm: {
+                promptText: cfText,
+                chatId: (result as any).chat_id,
+                messageId: (result as any).message_id,
+              },
+            });
+          } else {
+            const finalText = result.answer || acc || "(no answer)";
+            updateThinking(finalText, true);
+          }
       if (result.chat_id) {
             setChats((xs) => xs.map((c) => (c.id === chat.id ? { ...c, serverId: result.chat_id, title: (result as any).title || c.title } : c)));
           }
@@ -344,6 +355,7 @@ export default function AetherChatWidget({
             onClose={() => setOpen(false)}
             play={play}
             onSendMessage={onSendMessage}
+            onSubmitContact={client ? async (payload) => client.submitContact(payload) : undefined}
             guestMode={guestMode}
             strings={{
               headerSubtitle: strings?.headerSubtitle || welcomeMessage,

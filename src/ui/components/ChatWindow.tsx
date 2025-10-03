@@ -29,6 +29,7 @@ export function ChatWindow({
   historyTitle,
   onSelectHistoryChat,
   guestMode,
+  onSubmitContact,
 }: Pick<AetherChatWidgetProps, "avatarName" | "avatarImageUrl" | "bannerImageUrl" | "companyName" | "versionTag"> & {
   chats: Chat[];
   setChats: React.Dispatch<React.SetStateAction<Chat[]>>;
@@ -42,7 +43,7 @@ export function ChatWindow({
     text: string;
     chat: Chat;
     thinkingId: string;
-    updateThinking: (content: string, done?: boolean) => void;
+    updateThinking: (content: string, done?: boolean, options?: { contactForm?: { promptText: string; chatId?: string; messageId?: string } }) => void;
   }) => Promise<void> | void;
   strings?: any;
   initialShowHistory?: boolean;
@@ -51,6 +52,14 @@ export function ChatWindow({
   historyTitle?: string;
   onSelectHistoryChat?: (chat: Chat) => void;
   guestMode?: boolean;
+  onSubmitContact?: (payload: {
+    chat_id: string;
+    message_id?: string | null;
+    name: string;
+    contact_method: 'email' | 'call' | string;
+    contact_value?: string | null;
+    concern_text: string;
+  }) => Promise<any>;
 }) {
   const [showHistory, setShowHistory] = useState(!!initialShowHistory);
   const [phase, setPhase] = useState<"splash" | "chat">("splash");
@@ -96,7 +105,19 @@ export function ChatWindow({
         />
 
         {/* Splash → Chat animated transition */}
-        <AnimateContent phase={phase} companyName={companyName} bannerImageUrl={bannerImageUrl} activeChat={activeChat} setChats={setChats} onRetitle={(title)=>setChats((xs)=>xs.map((c)=>c.id===activeChat.id?{...c,title}:c))} play={play} versionTag={'v1.0  .'} onSendMessage={onSendMessage} strings={strings} />
+        <AnimateContent
+          phase={phase}
+          companyName={companyName}
+          bannerImageUrl={bannerImageUrl}
+          activeChat={activeChat}
+          setChats={setChats}
+          onRetitle={(title)=>setChats((xs)=>xs.map((c)=>c.id===activeChat.id?{...c,title}:c))}
+          play={play}
+          versionTag={'v1.0  .'}
+          onSendMessage={onSendMessage}
+          onSubmitContact={onSubmitContact}
+          strings={strings}
+        />
 
         {/* Decorative bottom-right droplet */}
         <div
@@ -147,6 +168,7 @@ function AnimateContent({
   play,
   versionTag,
   onSendMessage,
+  onSubmitContact,
   strings,
 }: any) {
   return (
@@ -162,6 +184,7 @@ function AnimateContent({
             onRetitle={onRetitle}
             onPlay={play}
             onSendMessage={onSendMessage}
+            onSubmitContact={onSubmitContact}
             inputPlaceholder={strings?.inputPlaceholder}
             thinkingText={strings?.thinkingLabel}
           />
