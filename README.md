@@ -26,15 +26,6 @@ Or use the standalone UMD bundle in a script tag from your own hosting:
 - UMD: `dist/aetherbot-sdk.umd.js` (global: `AetherbotWidget`)
 - Types: `dist/types/`
 
-### Styles
-
-- When using the UMD bundle, the SDK will automatically inject `dist/style.css` from the same folder as the script. No extra `<link>` tag is required when files are colocated (e.g., CDN paths like `/dist/aetherbot-sdk.umd.js` and `/dist/style.css`).
-- If you host files separately, either colocate `style.css` next to the UMD file, or include it yourself:
-
-```
-<link rel="stylesheet" href="/path/to/style.css" />
-```
-
 ### Scripts
 
 - `npm run build` — build JS bundles and types
@@ -129,3 +120,4 @@ npm run build
 ### License
 
 MIT
+
