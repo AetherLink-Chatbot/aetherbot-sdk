@@ -60,6 +60,8 @@ export interface AetherChatWidgetProps {
   widthPercent?: number; // target width percent of viewport (clamped to design)
   heightPercent?: number; // max height percent of viewport (clamped)
   showAvatars?: boolean; // accepted but not altering layout by default
+  // Position of launcher + chat window
+  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
   
   // A/B testing for widget visibility
   abTesting?: ABTestingConfig;

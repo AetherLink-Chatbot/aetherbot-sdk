@@ -42,6 +42,7 @@ export default function AetherChatWidget({
   heightPercent,
   strings,
   abTesting,
+  position = 'bottom-right',
 }: AetherChatWidgetProps) {
   const resolvedName = avatarName || displayName || "Aetherbot";
   const resolvedCompany = companyName || organizationName || "Aetherlink";
@@ -182,10 +183,21 @@ export default function AetherChatWidget({
   }, [onReady, setOpen, setChats, setActiveId, firstMessage]);
 
   // Optional: Rehydrate history from server for this external user
+  const isPristine = useMemo(() => {
+    if (!chats || chats.length !== 1) return false;
+    const c = chats[0];
+    if ((c as any).serverId) return false;
+    if (!c.messages || c.messages.length !== 1) return false;
+    const m = c.messages[0];
+    return m.role === 'assistant' && typeof m.content === 'string' && m.content === firstMessage;
+  }, [chats, firstMessage]);
+
   useEffect(() => {
     let cancelled = false;
     if (!client) return;
     if (guestMode) return; // Do not fetch past chats for guest users
+    // Avoid overriding a user who already started interacting locally
+    if (!isPristine) return;
     (async () => {
       try {
         const list = await client.listChats();
@@ -232,7 +244,7 @@ export default function AetherChatWidget({
     return () => {
       cancelled = true;
     };
-  }, [client, setChats, setActiveId, firstMessage]);
+  }, [client, setChats, setActiveId, firstMessage, guestMode, isPristine]);
 
   // A/B testing assignment to decide widget visibility
   const [abShow, setAbShow] = useState<boolean>(() => (abTesting ? false : true));
@@ -337,7 +349,7 @@ export default function AetherChatWidget({
       style={cssVars as React.CSSProperties}
       className={`fixed inset-0 pointer-events-none z-[60]`}
     >
-      <Launcher open={open} onToggle={toggleOpen} avatarImageUrl={resolvedAvatar} titleText={strings?.launcherTitle} subtitleText={strings?.launcherSubtitle} />
+      <Launcher open={open} onToggle={toggleOpen} avatarImageUrl={resolvedAvatar} titleText={strings?.launcherTitle} subtitleText={strings?.launcherSubtitle} position={position} />
       <AnimatePresence initial={false}>
         {open && (
           <ChatWindow
@@ -357,6 +369,7 @@ export default function AetherChatWidget({
             onSendMessage={onSendMessage}
             onSubmitContact={client ? async (payload) => client.submitContact(payload) : undefined}
             guestMode={guestMode}
+            position={position}
             strings={{
               headerSubtitle: strings?.headerSubtitle || welcomeMessage,
               bannerTagline: strings?.bannerTagline,

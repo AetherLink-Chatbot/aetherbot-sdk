@@ -19,15 +19,24 @@ export function Launcher({
   avatarImageUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=chatbot",
   titleText = "Let's Chat, Your Way",
   subtitleText = "This chatbot adapts to your style of conversation.",
+  position = 'bottom-right',
 }: {
   open?: boolean;
   onToggle?: () => void;
   avatarImageUrl?: string;
   titleText?: string;
   subtitleText?: string;
+  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
 }) {
+  const posClass = position === 'bottom-left'
+    ? 'fixed bottom-6 left-6'
+    : position === 'top-right'
+    ? 'fixed top-6 right-6'
+    : position === 'top-left'
+    ? 'fixed top-6 left-6'
+    : 'fixed bottom-6 right-6';
   return (
-    <div className="pointer-events-auto fixed bottom-6 right-6 z-[61]">
+    <div className={`pointer-events-auto ${posClass} z-[61]`}>
       <AnimatePresence mode="wait">
         {!open && (
           <LauncherCard 

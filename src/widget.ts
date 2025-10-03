@@ -37,6 +37,8 @@ export type CreateWidgetOptions = {
   chatHistoryMode?: "history" | "always-new" | "show-history";
   widthPercent?: number;
   heightPercent?: number;
+  // Position of the launcher + chat window
+  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
   // Copy overrides
   strings?: TextOverrides;
 
@@ -147,6 +149,7 @@ export function createWidget(opts: CreateWidgetOptions): WidgetController {
         chatHistoryMode: opts.chatHistoryMode,
         widthPercent: opts.widthPercent,
         heightPercent: opts.heightPercent,
+        position: opts.position,
         strings: opts.strings,
         abTesting: opts.abTesting,
         onReady: (c: any) => {

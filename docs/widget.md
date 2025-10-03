@@ -82,12 +82,19 @@ Add the UMD bundle and initialize the widget. The `apiBaseUrl` is fixed to `http
   - `externalUserId`: Your user identifier; use `'guest-user'` when you do not have a signed-in user.
 - Presentation
 
-  - `displayName`, `organizationName`, `avatarImage`, `bannerImageUrl`.
+  - `avatarName` | `displayName`: Visible assistant name (aliases; either works).
+  - `companyName` | `organizationName`: Organization name (aliases; either works).
+  - `avatarImageUrl` | `avatarImage`: Assistant avatar image URL (aliases).
+  - `bannerImageUrl`: Optional banner image URL.
+  - `versionTag`: Small version string shown in the footer.
+  - `firstMessage`: Initial assistant message shown in a new chat.
+  - `welcomeMessage`: Subtitle in the header while idle.
 - Behavior/UX
 
-  - `autoOpenMode`: `'manual' | 'delay' | 'scroll'`.
+  - `autoOpenMode`: `'manual' | 'delay' | 'scroll' | 'hybrid'`.
   - `autoOpenDelaySeconds`, `autoOpenScrollPercentage`.
   - `chatHistoryMode`: `'history' | 'always-new' | 'show-history'`.
+  - `position`: `'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'` — controls where the launcher and chat window appear. Default: `'bottom-right'`.
 - Theme
 
   - `theme.text`: Global text color.
@@ -98,6 +105,7 @@ Add the UMD bundle and initialize the widget. The `apiBaseUrl` is fixed to `http
 - Copy
 
   - `firstMessage`, `welcomeMessage`, and `strings` for small UI text overrides.
+  - `strings` fields include: `launcherTitle`, `launcherSubtitle`, `headerSubtitle`, `bannerTagline`, `inputPlaceholder`, `thinkingLabel`, `poweredByPrefix`, `poweredByBrand`, `splashPoweredByBrand`.
 - A/B Testing (optional)
 
   - `abTesting: { testPercentage: number; persistAssignment?: boolean }`.

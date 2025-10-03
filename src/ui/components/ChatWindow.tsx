@@ -30,6 +30,7 @@ export function ChatWindow({
   onSelectHistoryChat,
   guestMode,
   onSubmitContact,
+  position = 'bottom-right',
 }: Pick<AetherChatWidgetProps, "avatarName" | "avatarImageUrl" | "bannerImageUrl" | "companyName" | "versionTag"> & {
   chats: Chat[];
   setChats: React.Dispatch<React.SetStateAction<Chat[]>>;
@@ -60,6 +61,7 @@ export function ChatWindow({
     contact_value?: string | null;
     concern_text: string;
   }) => Promise<any>;
+  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
 }) {
   const [showHistory, setShowHistory] = useState(!!initialShowHistory);
   const [phase, setPhase] = useState<"splash" | "chat">("splash");
@@ -81,9 +83,17 @@ export function ChatWindow({
     ? `${Math.min(78, Math.max(20, heightPercent))}vh`
     : undefined;
 
+  const posClass = position === 'bottom-left'
+    ? 'fixed bottom-24 left-6'
+    : position === 'top-right'
+    ? 'fixed top-24 right-6'
+    : position === 'top-left'
+    ? 'fixed top-24 left-6'
+    : 'fixed bottom-24 right-6';
+
   return (
     <motion.div
-      className="pointer-events-auto fixed bottom-24 right-6 w-[380px] max-h-[78vh] sm:w-[420px]"
+      className={`pointer-events-auto ${posClass} w-[380px] max-h-[78vh] sm:w-[420px]`}
       style={{ width: wClamp, maxHeight: hClamp } as React.CSSProperties}
       initial={{ opacity: 0, y: 16, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -119,9 +129,9 @@ export function ChatWindow({
           strings={strings}
         />
 
-        {/* Decorative bottom-right droplet */}
+        {/* Decorative droplet aligns with horizontal side and vertical position */}
         <div
-          className="absolute -bottom-3 -right-2 h-8 w-8 rounded-full shadow-md"
+          className={`absolute h-8 w-8 rounded-full shadow-md ${position.startsWith('top') ? '-top-3' : '-bottom-3'} ${position.endsWith('left') ? '-left-2' : '-right-2'}`}
           style={{ backgroundColor: "var(--aether-bg)" } as React.CSSProperties}
         />
       </div>
