@@ -17,7 +17,7 @@ export function Header({
   muted: boolean;
   setMuted: (v: boolean) => void;
   onHistory: () => void;
-  onClose: () => void;
+  onClose?: () => void; // Made optional for inline mode
   subtitleText?: string;
 }) {
   return (
@@ -41,12 +41,17 @@ export function Header({
         <IconButton label="History" onClick={onHistory}>
           <History className="h-4 w-4" />
         </IconButton>
-        <IconButton label="Minimize" onClick={onClose}>
-          <Minus className="h-4 w-4" />
-        </IconButton>
-        <IconButton label="Close" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </IconButton>
+        {/* Only show minimize and close buttons if onClose is provided (overlay mode) */}
+        {onClose && (
+          <>
+            <IconButton label="Minimize" onClick={onClose}>
+              <Minus className="h-4 w-4" />
+            </IconButton>
+            <IconButton label="Close" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </IconButton>
+          </>
+        )}
       </div>
     </div>
   );

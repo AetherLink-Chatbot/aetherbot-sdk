@@ -37,8 +37,16 @@ export type CreateWidgetOptions = {
   chatHistoryMode?: "history" | "always-new" | "show-history";
   widthPercent?: number;
   heightPercent?: number;
-  // Position of the launcher + chat window
+  
+  // NEW: Display mode
+  mode?: 'overlay' | 'inline';
+  
+  // Position of the launcher + chat window (only for overlay mode)
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  
+  // NEW: Container selector for inline mode
+  container?: string | HTMLElement;
+  
   // Copy overrides
   strings?: TextOverrides;
 
@@ -115,9 +123,42 @@ function applyThemeVars(theme?: Partial<ThemeConfig>) {
 export function createWidget(opts: CreateWidgetOptions): WidgetController {
   ensureAetherStylesInjected();
   if (opts?.theme) applyThemeVars(opts.theme as Partial<ThemeConfig>);
+  
+  // Determine container based on mode
+  const mode = opts.mode || 'overlay';
+  let targetContainer: HTMLElement;
+
+  if (mode === 'inline') {
+    // For inline mode, find or use the specified container
+    if (opts.container) {
+      if (typeof opts.container === 'string') {
+        const found = document.querySelector(opts.container);
+        if (!found) {
+          throw new Error(`Container not found: ${opts.container}`);
+        }
+        targetContainer = found as HTMLElement;
+      } else {
+        targetContainer = opts.container;
+      }
+    } else {
+      throw new Error('Inline mode requires a container option');
+    }
+  } else {
+    // For overlay mode, append to body as before
+    targetContainer = document.body;
+  }
+
   const container = document.createElement("div");
   container.setAttribute("data-aetherbot-widget", "");
-  document.body.appendChild(container);
+  
+  // Add inline-specific styling
+  if (mode === 'inline') {
+    container.style.width = '100%';
+    container.style.height = '100%';
+    container.style.position = 'relative';
+  }
+  
+  targetContainer.appendChild(container);
 
   let root: Root | null = createRoot(container);
 
@@ -152,6 +193,7 @@ export function createWidget(opts: CreateWidgetOptions): WidgetController {
         position: opts.position,
         strings: opts.strings,
         abTesting: opts.abTesting,
+        mode: mode, // Pass mode to the component
         onReady: (c: any) => {
           controls = c;
         },

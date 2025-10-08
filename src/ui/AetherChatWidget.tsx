@@ -12,7 +12,7 @@ import "./styles/utilities.css";
 const initialTheme: ThemeConfig = {
   text: "#111111",
   background: "#ffffff",
-  secondary: "#7c3aed", // accent
+  secondary: "#7c3aed",
   aiMessageBg: "#f6f6f7",
   bannerText: "#ffffff",
 };
@@ -27,9 +27,8 @@ export default function AetherChatWidget({
   organizationName,
   theme: themeProp,
   versionTag = "v1.01",
-  firstMessage = "Hey! I’m here to help. Ask me anything — product info, policies, or troubleshooting.",
+  firstMessage = "Hey! I'm here to help. Ask me anything — product info, policies, or troubleshooting.",
   welcomeMessage,
-  apiKey,
   avatarId,
   externalUserId,
   externalUserName,
@@ -43,6 +42,7 @@ export default function AetherChatWidget({
   strings,
   abTesting,
   position = 'bottom-right',
+  mode = 'overlay',
 }: AetherChatWidgetProps) {
   const resolvedName = avatarName || displayName || "Aetherbot";
   const resolvedCompany = companyName || organizationName || "Aetherlink";
@@ -53,7 +53,7 @@ export default function AetherChatWidget({
     { ...initialTheme, ...(themeProp || {}) }
   );
 
-  const [open, setOpen] = useLocalStorage<boolean>("aether.widget.open", false);
+  const [open, setOpen] = useLocalStorage<boolean>("aether.widget.open", mode === 'inline' ? true : false);
   const [muted, setMuted] = useLocalStorage<boolean>("aether.widget.muted", false);
   const { chord, play } = useChime(!muted);
 
@@ -79,15 +79,11 @@ export default function AetherChatWidget({
   );
 
   const activeChat = chats.find((c) => c.id === activeId) || chats[0];
-
-  // History drawer title comes from API (project_name) when available
   const [historyTitle, setHistoryTitle] = useState<string>("Past chats");
 
   useEffect(() => {
     if (!activeChat && chats.length) setActiveId(chats[0].id);
   }, [chats, activeChat, setActiveId]);
-
-  // Dark/light mode removed; colors are controlled purely by theme variables.
 
   const cssVars = useMemo(
     () => ({
@@ -107,8 +103,9 @@ export default function AetherChatWidget({
     });
   };
 
-  // Auto open behaviors
+  // Auto open behaviors (disabled in inline mode)
   useEffect(() => {
+    if (mode === 'inline') return;
     if (autoOpenMode === "manual") return;
     let opened = false;
     const maybeOpen = () => {
@@ -135,30 +132,28 @@ export default function AetherChatWidget({
       tasks.push(() => window.removeEventListener("scroll", onScroll));
     }
     return () => tasks.forEach((fn) => fn());
-  }, [autoOpenMode, autoOpenDelaySeconds, autoOpenScrollPercentage]);
+  }, [mode, autoOpenMode, autoOpenDelaySeconds, autoOpenScrollPercentage, setOpen]);
 
-  // Prepare API client if config provided
-  const API_BASE = "https://aetherbot.dev";
-  const canLive = apiKey && avatarId && externalUserId;
+  const API_BASE = "https://api.aetherbot.dev";
+  const canLive = Boolean(avatarId && externalUserId);
   const guestMode = (externalUserId || "").toLowerCase() === "guest-user";
   const client = useMemo(() => {
     if (!canLive) return null;
     return createPublicApiClient({
-      apiKey: apiKey!,
       apiBaseUrl: API_BASE,
       avatarId: avatarId!,
       externalUserId: externalUserId!,
       externalUserName,
     });
-  }, [apiKey, avatarId, externalUserId, externalUserName, canLive]);
+  }, [avatarId, externalUserId, externalUserName, canLive]);
 
   // Expose controls to outer controller
   useEffect(() => {
     if (!onReady) return;
     const controls = {
-      open: () => setOpen(true),
-      close: () => setOpen(false),
-      toggle: () => setOpen((v) => !v),
+      open: () => mode === 'overlay' && setOpen(true),
+      close: () => mode === 'overlay' && setOpen(false),
+      toggle: () => mode === 'overlay' && setOpen((v) => !v),
       resetConversation: () => {
         const id = crypto.randomUUID();
         const now = Date.now();
@@ -180,9 +175,8 @@ export default function AetherChatWidget({
       },
     };
     onReady(controls);
-  }, [onReady, setOpen, setChats, setActiveId, firstMessage]);
+  }, [onReady, mode, setOpen, setChats, setActiveId, firstMessage]);
 
-  // Optional: Rehydrate history from server for this external user
   const isPristine = useMemo(() => {
     if (!chats || chats.length !== 1) return false;
     const c = chats[0];
@@ -195,14 +189,12 @@ export default function AetherChatWidget({
   useEffect(() => {
     let cancelled = false;
     if (!client) return;
-    if (guestMode) return; // Do not fetch past chats for guest users
-    // Avoid overriding a user who already started interacting locally
+    if (guestMode) return;
     if (!isPristine) return;
     (async () => {
       try {
         const list = await client.listChats();
         const items: any[] = list.items || [];
-        // Map to lightweight Chat entries; we'll fetch messages for the most recent one
         const mapped: Chat[] = items.map((it) => ({
           id: it.chat_id,
           serverId: it.chat_id,
@@ -213,9 +205,8 @@ export default function AetherChatWidget({
         const proj = items[0]?.project_name;
         if (proj) setHistoryTitle(proj);
         if (cancelled) return;
-        if (mapped.length === 0) return; // keep local default chat
+        if (mapped.length === 0) return;
 
-        // Fetch latest chat history to populate
         const latest = mapped[0];
         const hist = await client.getChat(latest.serverId!);
         const msgs = (hist.messages || []).map((m: any) => ({
@@ -238,7 +229,6 @@ export default function AetherChatWidget({
         setChats([latest, ...mapped.slice(1)]);
         setActiveId(latest.id);
       } catch {
-        // ignore network errors; keep local state
       }
     })();
     return () => {
@@ -246,7 +236,6 @@ export default function AetherChatWidget({
     };
   }, [client, setChats, setActiveId, firstMessage, guestMode, isPristine]);
 
-  // A/B testing assignment to decide widget visibility
   const [abShow, setAbShow] = useState<boolean>(() => (abTesting ? false : true));
   useEffect(() => {
     let cancelled = false;
@@ -258,7 +247,6 @@ export default function AetherChatWidget({
     const pct = Math.max(0, Math.min(100, Math.floor(cfg.testPercentage)));
     const lsKey = avatarId ? `aether.widget.ab.${avatarId}.${guestMode ? 'guest' : (externalUserId || 'anon')}` : `aether.widget.ab.default`;
 
-    // For guests with persistence, prefer local cached choice
     if (guestMode && cfg.persistAssignment) {
       try {
         const raw = localStorage.getItem(lsKey);
@@ -274,14 +262,12 @@ export default function AetherChatWidget({
 
     (async () => {
       try {
-        // Prefer server assignment if we can call it; otherwise fallback to client-side coin flip
         let show: boolean;
         if (client) {
           const res = await (client as any).assignAb?.({ testPercentage: pct, userId: externalUserId || null });
           show = typeof res?.show === 'boolean' ? !!res.show : true;
         } else {
-          // Fallback: guests or missing creds → local random
-          const roll = Math.floor(Math.random() * 100) + 1; // 1..100
+          const roll = Math.floor(Math.random() * 100) + 1;
           show = roll <= pct;
         }
         if (cancelled) return;
@@ -290,7 +276,6 @@ export default function AetherChatWidget({
           try { localStorage.setItem(lsKey, JSON.stringify({ show })); } catch {}
         }
       } catch {
-        // On error, default to showing the widget
         if (!cancelled) setAbShow(true);
       }
     })();
@@ -298,7 +283,6 @@ export default function AetherChatWidget({
     return () => { cancelled = true; };
   }, [abTesting, client, avatarId, externalUserId, guestMode]);
 
-  // Streaming sender when API is enabled
   const onSendMessage = client
     ? async ({ text, chat, updateThinking }: { text: string; chat: Chat; thinkingId: string; updateThinking: (content: string, done?: boolean, options?: { contactForm?: { promptText: string; chatId?: string; messageId?: string } }) => void }) => {
         let acc = "";
@@ -328,28 +312,88 @@ export default function AetherChatWidget({
             const finalText = result.answer || acc || "(no answer)";
             updateThinking(finalText, true);
           }
-      if (result.chat_id) {
+          if (result.chat_id) {
             setChats((xs) => xs.map((c) => (c.id === chat.id ? { ...c, serverId: result.chat_id, title: (result as any).title || c.title } : c)));
           }
         } catch (e) {
-          updateThinking("Sorry, I couldn’t reach the server.", true);
+          updateThinking("Sorry, I couldn't reach the server.", true);
         }
       }
     : undefined;
 
-    const root = document.documentElement;
-    Object.entries(cssVars).forEach(([key, value]) => {
-      root.style.setProperty(key, value as string);
-    });
+  const root = document.documentElement;
+  Object.entries(cssVars).forEach(([key, value]) => {
+    root.style.setProperty(key, value as string);
+  });
 
   if (abTesting && !abShow) return null;
 
+  // Inline mode: always show chat window, no launcher, fill container
+  if (mode === 'inline') {
+    return (
+      <div
+        style={cssVars as React.CSSProperties}
+        className="w-full h-full relative"
+      >
+        <ChatWindow
+          avatarName={resolvedName}
+          avatarImageUrl={resolvedAvatar}
+          bannerImageUrl={bannerImageUrl}
+          companyName={resolvedCompany}
+          chats={chats}
+          setChats={setChats}
+          activeChat={activeChat}
+          setActiveId={setActiveId}
+          versionTag={"v1.0  ."}
+          muted={muted}
+          setMuted={setMuted}
+          onClose={() => {}}
+          play={play}
+          onSendMessage={onSendMessage}
+          onSubmitContact={client ? async (payload) => client.submitContact(payload) : undefined}
+          guestMode={guestMode}
+          position={position}
+          mode={mode}
+          strings={{
+            headerSubtitle: strings?.headerSubtitle || welcomeMessage,
+            bannerTagline: strings?.bannerTagline,
+            inputPlaceholder: strings?.inputPlaceholder || "Type message...",
+            thinkingLabel: strings?.thinkingLabel || "Thinking…",
+            poweredByPrefix: "Powered by",
+            poweredByBrand: "AetherLink",
+            splashPoweredByBrand: "AetherLink",
+            initialAssistantMessage: firstMessage,
+          } as TextOverrides & { initialAssistantMessage?: string }}
+          initialShowHistory={chatHistoryMode === "show-history"}
+          widthPercent={widthPercent}
+          heightPercent={heightPercent}
+          historyTitle={historyTitle}
+          onSelectHistoryChat={client ? async (c) => {
+            try {
+              if (!c.serverId) return;
+              const hist = await client.getChat(c.serverId);
+              const msgs = (hist.messages || []).map((m: any) => ({
+                id: m.id || crypto.randomUUID(),
+                role: (m.role || "ASSISTANT").toString().toLowerCase(),
+                content: m.content || "",
+                createdAt: Date.parse(m.created_at || new Date().toISOString()) || Date.now(),
+              }));
+              setChats((xs) => xs.map((x) => (x.id === c.id ? { ...x, messages: msgs, title: hist.title || x.title } : x)));
+              setActiveId(c.id);
+            } catch {}
+          } : undefined}
+        />
+      </div>
+    );
+  }
+
+  // Overlay mode: show launcher + animated chat window
   return (
     <div
       style={cssVars as React.CSSProperties}
       className={`fixed inset-0 pointer-events-none z-[60]`}
     >
-      <Launcher open={open} onToggle={toggleOpen} avatarImageUrl={resolvedAvatar} titleText={strings?.launcherTitle} subtitleText={strings?.launcherSubtitle} position={position} />
+      <Launcher open={open} onToggle={toggleOpen} avatarImageUrl={resolvedAvatar} titleText={strings?.launcherTitle} subtitleText={strings?.launcherSubtitle} position={position} mode={mode} />
       <AnimatePresence initial={false}>
         {open && (
           <ChatWindow
@@ -370,6 +414,7 @@ export default function AetherChatWidget({
             onSubmitContact={client ? async (payload) => client.submitContact(payload) : undefined}
             guestMode={guestMode}
             position={position}
+            mode={mode}
             strings={{
               headerSubtitle: strings?.headerSubtitle || welcomeMessage,
               bannerTagline: strings?.bannerTagline,

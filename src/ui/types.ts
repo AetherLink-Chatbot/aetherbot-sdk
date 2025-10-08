@@ -46,7 +46,7 @@ export interface AetherChatWidgetProps {
   // Optional: initial assistant message to display
   firstMessage?: string;
   welcomeMessage?: string; // header subtitle while idle
-  // Optional API config for live integration
+  // Optional API config for live integration (apiKey no longer required)
   apiKey?: string;
   // apiBaseUrl is static to https://aetherbot.dev
   avatarId?: string;
@@ -62,6 +62,7 @@ export interface AetherChatWidgetProps {
   showAvatars?: boolean; // accepted but not altering layout by default
   // Position of launcher + chat window
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  mode?: 'overlay' | 'inline'; // ADD THIS
   
   // A/B testing for widget visibility
   abTesting?: ABTestingConfig;
@@ -78,7 +79,6 @@ export interface AetherChatWidgetProps {
 }
 
 export interface PublicApiClientConfig {
-  apiKey: string;
   apiBaseUrl: string;
   avatarId: string;
   externalUserId: string;

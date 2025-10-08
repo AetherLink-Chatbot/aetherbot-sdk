@@ -31,6 +31,7 @@ export function ChatWindow({
   guestMode,
   onSubmitContact,
   position = 'bottom-right',
+  mode = 'overlay',
 }: Pick<AetherChatWidgetProps, "avatarName" | "avatarImageUrl" | "bannerImageUrl" | "companyName" | "versionTag"> & {
   chats: Chat[];
   setChats: React.Dispatch<React.SetStateAction<Chat[]>>;
@@ -62,6 +63,7 @@ export function ChatWindow({
     concern_text: string;
   }) => Promise<any>;
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  mode?: 'overlay' | 'inline';
 }) {
   const [showHistory, setShowHistory] = useState(!!initialShowHistory);
   const [phase, setPhase] = useState<"splash" | "chat">("splash");
@@ -76,6 +78,80 @@ export function ChatWindow({
     return () => clearTimeout(t);
   }, []);
 
+  // Inline mode: full container, no animations, no positioning
+  if (mode === 'inline') {
+    return (
+      <div className="w-full h-full flex flex-col" style={{ minHeight: 0 }}>
+        <div
+          className="flex-1 flex flex-col overflow-hidden rounded-2xl shadow-lg border border-white/60 dark:border-white/10"
+          style={{ 
+            backgroundColor: "var(--aether-bg)", 
+            color: "var(--aether-text)",
+            minHeight: 0,
+            height: '100%'
+          } as React.CSSProperties}
+        >
+          <Header
+            avatarName={avatarName}
+            avatarImageUrl={avatarImageUrl}
+            muted={muted}
+            setMuted={setMuted}
+            onHistory={() => setShowHistory(true)}
+            onClose={undefined} // No close button in inline mode
+            subtitleText={strings?.headerSubtitle}
+          />
+
+          {/* Splash → Chat animated transition - wrap in flex container */}
+          <div className="flex-1 flex flex-col overflow-hidden" style={{ minHeight: 0 }}>
+            <AnimateContent
+              phase={phase}
+              companyName={companyName}
+              bannerImageUrl={bannerImageUrl}
+              activeChat={activeChat}
+              setChats={setChats}
+              onRetitle={(title)=>setChats((xs)=>xs.map((c)=>c.id===activeChat.id?{...c,title}:c))}
+              play={play}
+              versionTag={'v1.0  .'}
+              onSendMessage={onSendMessage}
+              onSubmitContact={onSubmitContact}
+              strings={strings}
+            />
+          </div>
+        </div>
+
+        <HistoryDrawer
+          show={showHistory}
+          chats={guestMode ? chats.filter((c)=>!!c.serverId) : chats}
+          activeId={activeChat.id}
+          setActiveId={setActiveId}
+          onClose={() => setShowHistory(false)}
+          onStartNew={() => {
+            const id = crypto.randomUUID();
+            const now = Date.now();
+            const chat: Chat = {
+              id,
+              createdAt: now,
+              title: "Untitled chat",
+              messages: [
+                {
+                  id: crypto.randomUUID(),
+                  role: "assistant",
+                  content: strings?.initialAssistantMessage || "Welcome! How can I help today?",
+                  createdAt: now,
+                },
+              ],
+            };
+            setChats((xs) => [chat, ...xs]);
+            setActiveId(id);
+          }}
+          titleText={historyTitle}
+          onSelectChat={onSelectHistoryChat}
+        />
+      </div>
+    );
+  }
+
+  // Overlay mode: original behavior with animations and positioning
   const wClamp = typeof widthPercent === 'number' && !Number.isNaN(widthPercent)
     ? `min(420px, max(380px, ${Math.max(0, Math.min(100, widthPercent))}vw))`
     : undefined;
@@ -186,19 +262,27 @@ function AnimateContent({
       {phase === "splash" ? (
         <IntroSplash poweredByBrand={"AetherLink"} />
       ) : (
-        <motion.div key="chat" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div 
+          key="chat" 
+          initial={{ opacity: 0, y: 8 }} 
+          animate={{ opacity: 1, y: 0 }}
+          className="flex-1 flex flex-col overflow-hidden"
+          style={{ minHeight: 0 }}
+        >
           <Banner bannerImageUrl={bannerImageUrl} companyName={companyName} taglineText={strings?.bannerTagline} />
-          <ConversationArea
-            chat={activeChat}
-            onUpdateChat={(chat: any) => setChats((xs: any) => xs.map((c: any) => (c.id === chat.id ? chat : c)))}
-            onRetitle={onRetitle}
-            onPlay={play}
-            onSendMessage={onSendMessage}
-            onSubmitContact={onSubmitContact}
-            inputPlaceholder={strings?.inputPlaceholder}
-            thinkingText={strings?.thinkingLabel}
-          />
-          <div className="px-4 pb-2">
+          <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>
+            <ConversationArea
+              chat={activeChat}
+              onUpdateChat={(chat: any) => setChats((xs: any) => xs.map((c: any) => (c.id === chat.id ? chat : c)))}
+              onRetitle={onRetitle}
+              onPlay={play}
+              onSendMessage={onSendMessage}
+              onSubmitContact={onSubmitContact}
+              inputPlaceholder={strings?.inputPlaceholder}
+              thinkingText={strings?.thinkingLabel}
+            />
+          </div>
+          <div className="px-4 pb-2 flex-shrink-0">
             <div className="mt-2 flex items-center justify-between text-[11px]" style={{ color: "var(--aether-text)", opacity: 0.7 } as React.CSSProperties}>
                <div className="flex items-center gap-1">
                  <Sparkles className="h-3.5 w-3.5" />

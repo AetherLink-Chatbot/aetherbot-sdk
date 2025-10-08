@@ -51,14 +51,12 @@
   <script src="../dist/aetherbot-sdk.umd.js"></script>
   <script>
     (function () {
-      const API_KEY = 'ak_886bd425_8eddccff6d453835cdb33f598f7e14a0684f0ff85220d7c0'; // Replace with your real API key
       const AVATAR_ID = 'e2c12fe6-1958-4320-b358-b3e78b65beff';
-      const API_BASE = 'https://aetherbot.dev';
+      const API_BASE = 'https://api.aetherbot.dev';
       const ORG_NAME = 'Droidor';
 
       function createWidget(avatarImage) {
         window.AetherbotWidget.create({
-          apiKey: API_KEY,
           avatarId: AVATAR_ID,
           externalUserId: 'Mani',
           externalUserName: '123',
@@ -89,9 +87,7 @@
         });
       }
 
-      fetch(`${API_BASE}/public/avatars-chat/${AVATAR_ID}/image`, {
-        headers: { 'X-API-Key': API_KEY }
-      })
+      fetch(`${API_BASE}/public/avatars-chat/${AVATAR_ID}/image`)
         .then((res) => (res.ok ? res.json() : null))
         .then((json) => createWidget(json && json.avatar_image ? json.avatar_image : null))
         .catch(() => createWidget(null));

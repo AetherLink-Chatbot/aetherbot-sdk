@@ -20,6 +20,7 @@ export function Launcher({
   titleText = "Let's Chat, Your Way",
   subtitleText = "This chatbot adapts to your style of conversation.",
   position = 'bottom-right',
+  mode = 'overlay',
 }: {
   open?: boolean;
   onToggle?: () => void;
@@ -27,7 +28,13 @@ export function Launcher({
   titleText?: string;
   subtitleText?: string;
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  mode?: 'overlay' | 'inline';
 }) {
+  // Don't render launcher in inline mode
+  if (mode === 'inline') {
+    return null;
+  }
+
   const posClass = position === 'bottom-left'
     ? 'fixed bottom-6 left-6'
     : position === 'top-right'
@@ -35,6 +42,7 @@ export function Launcher({
     : position === 'top-left'
     ? 'fixed top-6 left-6'
     : 'fixed bottom-6 right-6';
+    
   return (
     <div className={`pointer-events-auto ${posClass} z-[61]`}>
       <AnimatePresence mode="wait">

@@ -9,13 +9,13 @@ export class PublicApiClient {
   private headers() {
     return {
       "Content-Type": "application/json",
-      "X-API-Key": this.cfg.apiKey,
     } as Record<string, string>;
   }
 
   async listChats(): Promise<any> {
     const url = new URL(`/public/avatars-chat/chats`, this.cfg.apiBaseUrl);
-    url.searchParams.set("external_user_id", this.cfg.externalUserId);
+    if (this.cfg.externalUserId) url.searchParams.set("external_user_id", this.cfg.externalUserId);
+    if (this.cfg.avatarId) url.searchParams.set("avatar_id", this.cfg.avatarId);
     const res = await fetch(url.toString(), { headers: this.headers() });
     if (!res.ok) throw new Error(`List chats failed: ${res.status}`);
     return res.json();
