@@ -15291,7 +15291,7 @@ function ix({
     }
     return () => lA.forEach((Z) => Z());
   }, [m, s, M, i, F]);
-  const zg = "https://api.aetherbot.dev", _g = !!(c && n), WA = (n || "").toLowerCase() === "guest-user", HA = v.useMemo(() => _g ? nx({
+  const zg = "http://localhost:8000", _g = !!(c && n), WA = (n || "").toLowerCase() === "guest-user", HA = v.useMemo(() => _g ? nx({
     apiBaseUrl: zg,
     avatarId: c,
     externalUserId: n,

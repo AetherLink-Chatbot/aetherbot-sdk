@@ -31,7 +31,8 @@
     "build:widget": "vite build --config vite.config.ts",
     "build:types": "tsc -p tsconfig.json",
     "dev:demo": "vite --config demo/vite.config.ts",
-    "preview:demo": "vite preview --config demo/vite.config.ts --open"
+    "preview:demo": "vite preview --config demo/vite.config.ts --open",
+    "serve:public": "node scripts/serve-public.js"
   },
   "dependencies": {
     "framer-motion": "^12.23.22",

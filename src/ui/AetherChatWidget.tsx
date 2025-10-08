@@ -134,7 +134,7 @@ export default function AetherChatWidget({
     return () => tasks.forEach((fn) => fn());
   }, [mode, autoOpenMode, autoOpenDelaySeconds, autoOpenScrollPercentage, setOpen]);
 
-  const API_BASE = "https://api.aetherbot.dev";
+  const API_BASE = "http://localhost:8000";
   const canLive = Boolean(avatarId && externalUserId);
   const guestMode = (externalUserId || "").toLowerCase() === "guest-user";
   const client = useMemo(() => {
