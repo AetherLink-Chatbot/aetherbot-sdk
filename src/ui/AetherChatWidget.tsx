@@ -328,61 +328,71 @@ export default function AetherChatWidget({
 
   if (abTesting && !abShow) return null;
 
-  // Inline mode: always show chat window, no launcher, fill container
+  // Inline mode: show launcher and animated chat window within container
   if (mode === 'inline') {
     return (
-      <div
-        style={cssVars as React.CSSProperties}
-        className="w-full h-full relative"
-      >
-        <ChatWindow
-          avatarName={resolvedName}
+      <div style={cssVars as React.CSSProperties} className="w-full h-full relative">
+        <Launcher
+          open={open}
+          onToggle={toggleOpen}
           avatarImageUrl={resolvedAvatar}
-          bannerImageUrl={bannerImageUrl}
-          companyName={resolvedCompany}
-          chats={chats}
-          setChats={setChats}
-          activeChat={activeChat}
-          setActiveId={setActiveId}
-          versionTag={"v1.0  ."}
-          muted={muted}
-          setMuted={setMuted}
-          onClose={() => {}}
-          play={play}
-          onSendMessage={onSendMessage}
-          onSubmitContact={client ? async (payload) => client.submitContact(payload) : undefined}
-          guestMode={guestMode}
+          titleText={strings?.launcherTitle}
+          subtitleText={strings?.launcherSubtitle}
           position={position}
           mode={mode}
-          strings={{
-            headerSubtitle: strings?.headerSubtitle || welcomeMessage,
-            bannerTagline: strings?.bannerTagline,
-            inputPlaceholder: strings?.inputPlaceholder || "Type message...",
-            thinkingLabel: strings?.thinkingLabel || "Thinking…",
-            poweredByPrefix: "Powered by",
-            poweredByBrand: "AetherLink",
-            splashPoweredByBrand: "AetherLink",
-            initialAssistantMessage: firstMessage,
-          } as TextOverrides & { initialAssistantMessage?: string }}
-          initialShowHistory={chatHistoryMode === "show-history"}
-          widthPercent={widthPercent}
-          heightPercent={heightPercent}
-          historyTitle={historyTitle}
-          onSelectHistoryChat={client ? async (c) => {
-            try {
-              if (!c.serverId) return;
-              const hist = await client.getChat(c.serverId);
-              const msgs = (hist.messages || []).map((m: any) => ({
-                id: m.id || crypto.randomUUID(),
-                role: (m.role || "ASSISTANT").toString().toLowerCase(),
-                content: m.content || "",
-                createdAt: Date.parse(m.created_at || new Date().toISOString()) || Date.now(),
-              }));
-              setChats((xs) => xs.map((x) => (x.id === c.id ? { ...x, messages: msgs, title: hist.title || x.title } : x)));
-              setActiveId(c.id);
-            } catch {}
-          } : undefined}
         />
+        <AnimatePresence initial={false}>
+          {open && (
+            <ChatWindow
+              avatarName={resolvedName}
+              avatarImageUrl={resolvedAvatar}
+              bannerImageUrl={bannerImageUrl}
+              companyName={resolvedCompany}
+              chats={chats}
+              setChats={setChats}
+              activeChat={activeChat}
+              setActiveId={setActiveId}
+              versionTag={"v1.0  ."}
+              muted={muted}
+              setMuted={setMuted}
+              onClose={() => setOpen(false)}
+              play={play}
+              onSendMessage={onSendMessage}
+              onSubmitContact={client ? async (payload) => client.submitContact(payload) : undefined}
+              guestMode={guestMode}
+              position={position}
+              mode={mode}
+              strings={{
+                headerSubtitle: strings?.headerSubtitle || welcomeMessage,
+                bannerTagline: strings?.bannerTagline,
+                inputPlaceholder: strings?.inputPlaceholder || "Type message...",
+                thinkingLabel: strings?.thinkingLabel || "Thinking…",
+                poweredByPrefix: "Powered by",
+                poweredByBrand: "AetherLink",
+                splashPoweredByBrand: "AetherLink",
+                initialAssistantMessage: firstMessage,
+              } as TextOverrides & { initialAssistantMessage?: string }}
+              initialShowHistory={chatHistoryMode === "show-history"}
+              widthPercent={widthPercent}
+              heightPercent={heightPercent}
+              historyTitle={historyTitle}
+              onSelectHistoryChat={client ? async (c) => {
+                try {
+                  if (!c.serverId) return;
+                  const hist = await client.getChat(c.serverId);
+                  const msgs = (hist.messages || []).map((m: any) => ({
+                    id: m.id || crypto.randomUUID(),
+                    role: (m.role || "ASSISTANT").toString().toLowerCase(),
+                    content: m.content || "",
+                    createdAt: Date.parse(m.created_at || new Date().toISOString()) || Date.now(),
+                  }));
+                  setChats((xs) => xs.map((x) => (x.id === c.id ? { ...x, messages: msgs, title: hist.title || x.title } : x)));
+                  setActiveId(c.id);
+                } catch {}
+              } : undefined}
+            />
+          )}
+        </AnimatePresence>
       </div>
     );
   }

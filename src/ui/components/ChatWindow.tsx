@@ -78,10 +78,17 @@ export function ChatWindow({
     return () => clearTimeout(t);
   }, []);
 
-  // Inline mode: full container, no animations, no positioning
+  // Inline mode: full container within parent; show header controls including close
   if (mode === 'inline') {
     return (
-      <div className="w-full h-full flex flex-col" style={{ minHeight: 0 }}>
+      <motion.div
+        className="w-full h-full flex flex-col"
+        style={{ minHeight: 0 }}
+        initial={{ opacity: 0, y: 16, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 16, scale: 0.98 }}
+        transition={{ type: "spring", stiffness: 180, damping: 16 }}
+      >
         <div
           className="flex-1 flex flex-col overflow-hidden rounded-2xl shadow-lg border border-white/60 dark:border-white/10"
           style={{ 
@@ -97,7 +104,7 @@ export function ChatWindow({
             muted={muted}
             setMuted={setMuted}
             onHistory={() => setShowHistory(true)}
-            onClose={undefined} // No close button in inline mode
+            onClose={onClose}
             subtitleText={strings?.headerSubtitle}
           />
 
@@ -147,7 +154,7 @@ export function ChatWindow({
           titleText={historyTitle}
           onSelectChat={onSelectHistoryChat}
         />
-      </div>
+      </motion.div>
     );
   }
 

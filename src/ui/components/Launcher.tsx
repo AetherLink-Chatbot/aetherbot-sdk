@@ -30,18 +30,14 @@ export function Launcher({
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
   mode?: 'overlay' | 'inline';
 }) {
-  // Don't render launcher in inline mode
-  if (mode === 'inline') {
-    return null;
-  }
-
+  const basePos = mode === 'inline' ? 'absolute' : 'fixed';
   const posClass = position === 'bottom-left'
-    ? 'fixed bottom-6 left-6'
+    ? `${basePos} bottom-6 left-6`
     : position === 'top-right'
-    ? 'fixed top-6 right-6'
+    ? `${basePos} top-6 right-6`
     : position === 'top-left'
-    ? 'fixed top-6 left-6'
-    : 'fixed bottom-6 right-6';
+    ? `${basePos} top-6 left-6`
+    : `${basePos} bottom-6 right-6`;
     
   return (
     <div className={`pointer-events-auto ${posClass} z-[61]`}>
