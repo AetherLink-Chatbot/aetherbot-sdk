@@ -31,7 +31,9 @@ export function Launcher({
   mode?: 'overlay' | 'inline';
 }) {
   const basePos = mode === 'inline' ? 'absolute' : 'fixed';
-  const posClass = position === 'bottom-left'
+  const posClass = mode === 'inline'
+    ? `${basePos} bottom-6 left-1/2 -translate-x-1/2 transform`
+    : position === 'bottom-left'
     ? `${basePos} bottom-6 left-6`
     : position === 'top-right'
     ? `${basePos} top-6 right-6`
@@ -53,7 +55,7 @@ export function Launcher({
       </AnimatePresence>
       
       <AnimatePresence>
-        {open && (
+        {open && mode !== 'inline' && (
           <motion.button
             key="launcher-close"
             aria-label="Close chat"

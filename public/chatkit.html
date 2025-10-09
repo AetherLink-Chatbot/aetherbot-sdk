@@ -202,6 +202,20 @@
       display: flex;
       flex-direction: column;
     }
+    .preview-stage {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .preview-launcher {
+      position: relative;
+      height: 120px;
+      border-top: 1px dashed #e5e7eb;
+      background: rgba(255,255,255,0.6);
+    }
 
     /* Loading State */
     .loading-state {
@@ -408,10 +422,13 @@
         <span class="mode-badge" id="mode-indicator">Inline Mode</span>
       </div>
       <div class="chat-container" id="chat-container">
-        <div class="loading-state">
-          <div class="spinner"></div>
-          <p>Initializing widget...</p>
+        <div id="widget-stage" class="preview-stage">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Initializing widget...</p>
+          </div>
         </div>
+        <div id="launcher-stage" class="preview-launcher"></div>
       </div>
     </main>
   </div>
@@ -495,7 +512,8 @@
       };
 
       if (mode === 'inline') {
-        config.container = '#chat-container';
+        config.container = '#widget-stage';
+        config.launcherContainer = '#launcher-stage';
       } else {
         config.position = position;
         config.autoOpenMode = 'manual';
@@ -523,10 +541,12 @@
       document.getElementById('mode-indicator').textContent = 
         mode === 'inline' ? 'Inline Mode' : 'Overlay Mode';
 
-      // Clear container for inline mode
-      const container = document.getElementById('chat-container');
+      // Clear containers for inline mode
       if (mode === 'inline') {
-        container.innerHTML = '';
+        const stage = document.getElementById('widget-stage');
+        const launcherStage = document.getElementById('launcher-stage');
+        if (stage) stage.innerHTML = '';
+        if (launcherStage) launcherStage.innerHTML = '';
       }
 
       try {

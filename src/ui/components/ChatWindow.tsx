@@ -24,8 +24,6 @@ export function ChatWindow({
   onSendMessage,
   strings,
   initialShowHistory,
-  widthPercent,
-  heightPercent,
   historyTitle,
   onSelectHistoryChat,
   guestMode,
@@ -39,7 +37,7 @@ export function ChatWindow({
   setActiveId: (id: string) => void;
   muted: boolean;
   setMuted: (v: boolean) => void;
-  onClose: () => void;
+  onClose?: () => void;
   play: (freq?: number, durationMs?: number) => void;
   onSendMessage?: (args: {
     text: string;
@@ -49,8 +47,6 @@ export function ChatWindow({
   }) => Promise<void> | void;
   strings?: any;
   initialShowHistory?: boolean;
-  widthPercent?: number;
-  heightPercent?: number;
   historyTitle?: string;
   onSelectHistoryChat?: (chat: Chat) => void;
   guestMode?: boolean;
@@ -78,25 +74,20 @@ export function ChatWindow({
     return () => clearTimeout(t);
   }, []);
 
-  // Inline mode: full container within parent; show header controls including close
+  // Inline mode: center the overlay-sized widget within the container
   if (mode === 'inline') {
-    return (
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
       <motion.div
-        className="w-full h-full flex flex-col"
-        style={{ minHeight: 0 }}
+        className="w-[380px] max-h-[78vh] sm:w-[420px]"
         initial={{ opacity: 0, y: 16, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 16, scale: 0.98 }}
-        transition={{ type: "spring", stiffness: 180, damping: 16 }}
+        transition={{ type: 'spring', stiffness: 180, damping: 16 }}
       >
         <div
-          className="flex-1 flex flex-col overflow-hidden rounded-2xl shadow-lg border border-white/60 dark:border-white/10"
-          style={{ 
-            backgroundColor: "var(--aether-bg)", 
-            color: "var(--aether-text)",
-            minHeight: 0,
-            height: '100%'
-          } as React.CSSProperties}
+          className="relative overflow-hidden rounded-3xl shadow-2xl border border-white/60 dark:border-white/10"
+          style={{ backgroundColor: 'var(--aether-bg)', color: 'var(--aether-text)' }}
         >
           <Header
             avatarName={avatarName}
@@ -108,63 +99,59 @@ export function ChatWindow({
             subtitleText={strings?.headerSubtitle}
           />
 
-          {/* Splash → Chat animated transition - wrap in flex container */}
-          <div className="flex-1 flex flex-col overflow-hidden" style={{ minHeight: 0 }}>
-            <AnimateContent
-              phase={phase}
-              companyName={companyName}
-              bannerImageUrl={bannerImageUrl}
-              activeChat={activeChat}
-              setChats={setChats}
-              onRetitle={(title)=>setChats((xs)=>xs.map((c)=>c.id===activeChat.id?{...c,title}:c))}
-              play={play}
-              versionTag={'v1.0  .'}
-              onSendMessage={onSendMessage}
-              onSubmitContact={onSubmitContact}
-              strings={strings}
-            />
-          </div>
+          <AnimateContent
+            phase={phase}
+            companyName={companyName}
+            bannerImageUrl={bannerImageUrl}
+            activeChat={activeChat}
+            setChats={setChats}
+            onRetitle={(title) =>
+              setChats((xs) => xs.map((c) => (c.id === activeChat.id ? { ...c, title } : c)))
+            }
+            play={play}
+            versionTag="v1.0"
+            onSendMessage={onSendMessage}
+            onSubmitContact={onSubmitContact}
+            strings={strings}
+          />
         </div>
-
-        <HistoryDrawer
-          show={showHistory}
-          chats={guestMode ? chats.filter((c)=>!!c.serverId) : chats}
-          activeId={activeChat.id}
-          setActiveId={setActiveId}
-          onClose={() => setShowHistory(false)}
-          onStartNew={() => {
-            const id = crypto.randomUUID();
-            const now = Date.now();
-            const chat: Chat = {
-              id,
-              createdAt: now,
-              title: "Untitled chat",
-              messages: [
-                {
-                  id: crypto.randomUUID(),
-                  role: "assistant",
-                  content: strings?.initialAssistantMessage || "Welcome! How can I help today?",
-                  createdAt: now,
-                },
-              ],
-            };
-            setChats((xs) => [chat, ...xs]);
-            setActiveId(id);
-          }}
-          titleText={historyTitle}
-          onSelectChat={onSelectHistoryChat}
-        />
       </motion.div>
-    );
-  }
+
+      <HistoryDrawer
+        show={showHistory}
+        chats={guestMode ? chats.filter((c) => !!c.serverId) : chats}
+        activeId={activeChat.id}
+        setActiveId={setActiveId}
+        onClose={() => setShowHistory(false)}
+        onStartNew={() => {
+          const id = crypto.randomUUID();
+          const now = Date.now();
+          const chat: Chat = {
+            id,
+            createdAt: now,
+            title: 'Untitled chat',
+            messages: [
+              {
+                id: crypto.randomUUID(),
+                role: 'assistant',
+                content:
+                  strings?.initialAssistantMessage || 'Welcome! How can I help today?',
+                createdAt: now,
+              },
+            ],
+          };
+          setChats((xs) => [chat, ...xs]);
+          setActiveId(id);
+        }}
+        titleText={historyTitle}
+        onSelectChat={onSelectHistoryChat}
+      />
+    </div>
+  );
+}
+
 
   // Overlay mode: original behavior with animations and positioning
-  const wClamp = typeof widthPercent === 'number' && !Number.isNaN(widthPercent)
-    ? `min(420px, max(380px, ${Math.max(0, Math.min(100, widthPercent))}vw))`
-    : undefined;
-  const hClamp = typeof heightPercent === 'number' && !Number.isNaN(heightPercent)
-    ? `${Math.min(78, Math.max(20, heightPercent))}vh`
-    : undefined;
 
   const posClass = position === 'bottom-left'
     ? 'fixed bottom-24 left-6'
@@ -177,7 +164,6 @@ export function ChatWindow({
   return (
     <motion.div
       className={`pointer-events-auto ${posClass} w-[380px] max-h-[78vh] sm:w-[420px]`}
-      style={{ width: wClamp, maxHeight: hClamp } as React.CSSProperties}
       initial={{ opacity: 0, y: 16, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 16, scale: 0.98 }}

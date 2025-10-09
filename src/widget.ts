@@ -35,8 +35,6 @@ export type CreateWidgetOptions = {
   autoOpenDelaySeconds?: number;
   autoOpenScrollPercentage?: number;
   chatHistoryMode?: "history" | "always-new" | "show-history";
-  widthPercent?: number;
-  heightPercent?: number;
   
   // NEW: Display mode
   mode?: 'overlay' | 'inline';
@@ -46,6 +44,8 @@ export type CreateWidgetOptions = {
   
   // NEW: Container selector for inline mode
   container?: string | HTMLElement;
+  // NEW: Separate container for the launcher in inline mode
+  launcherContainer?: string | HTMLElement;
   
   // Copy overrides
   strings?: TextOverrides;
@@ -188,12 +188,11 @@ export function createWidget(opts: CreateWidgetOptions): WidgetController {
         autoOpenDelaySeconds: opts.autoOpenDelaySeconds,
         autoOpenScrollPercentage: opts.autoOpenScrollPercentage,
         chatHistoryMode: opts.chatHistoryMode,
-        widthPercent: opts.widthPercent,
-        heightPercent: opts.heightPercent,
         position: opts.position,
         strings: opts.strings,
         abTesting: opts.abTesting,
         mode: mode, // Pass mode to the component
+        launcherContainer: opts.launcherContainer,
         onReady: (c: any) => {
           controls = c;
         },

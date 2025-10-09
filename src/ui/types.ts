@@ -57,12 +57,12 @@ export interface AetherChatWidgetProps {
   autoOpenDelaySeconds?: number; // used when mode includes delay
   autoOpenScrollPercentage?: number; // used when mode includes scroll
   chatHistoryMode?: "history" | "always-new" | "show-history";
-  widthPercent?: number; // target width percent of viewport (clamped to design)
-  heightPercent?: number; // max height percent of viewport (clamped)
   showAvatars?: boolean; // accepted but not altering layout by default
   // Position of launcher + chat window
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
   mode?: 'overlay' | 'inline'; // ADD THIS
+  // Inline preview: optional separate container for the launcher
+  launcherContainer?: string | HTMLElement;
   
   // A/B testing for widget visibility
   abTesting?: ABTestingConfig;
